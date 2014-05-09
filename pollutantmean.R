@@ -18,9 +18,9 @@ pollutantmean <- function(directory, pollutant, id = 1:332) {
   
   # Add directory before file so will read in correct location
   files.to.get <- paste(directory, "/", files.to.get, sep="")
-  
+  print(files.to.get)
   # Read in files - apply read.csv function to each file name
-  pollutant.data <- sapply(files.to.get, read.csv)
+  #pollutant.data <- sapply(files.to.get, read.csv)
 
   #
   
