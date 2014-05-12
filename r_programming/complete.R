@@ -28,7 +28,7 @@ complete <- function(directory, id = 1:332) {
   len <- length(files.to.get)
   num.of.obs.by.site <- data.frame(id=numeric(len), nobs=numeric(len))
   # Create variable to use to keep track of which row working with in file list
-  i = 0
+  i =<- 0
   
   # Read into files, as record number of full observations for each site
   for (file in files.to.get) {
