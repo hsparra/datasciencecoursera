@@ -22,12 +22,19 @@ corr <- function(directory, threshold = 0) {
     
     for (file in file.list) {
         temp.ds <- read.csv(file)
+
         if (sum(complete.cases(temp.ds)) >= threshold) {
             i <- i + 1
-            cors[i] <- cor(temp.ds$sulfate, temp.ds$nitrate, use="complete")            
+            cors[i] <- cor(temp.ds$sulfate, temp.ds$nitrate, use="pairwise.complete.obs")
         }
+        rm(temp.ds)
     }
     
-    cors.to.return <- cors[1:i]
+    if (i > 0) {
+        cors.to.return <- cors[1:i]
+    } else {
+        cors.to.return <- numeric(0)
+    }
+    
     cors.to.return
 }
