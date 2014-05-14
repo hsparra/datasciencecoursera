@@ -19,6 +19,17 @@ best <- function(state, outcome) {
     }
     
     #read outcome data
+    outcomes <- read.csv("outcome-of-care-measures.csv", na.strings=c("NA","Not Available"), stringsAsFactors=FALSE)
+    
+    # set column of interest to numeric
+    outcomes[,col] <- as.numeric(outcomes[,col])
+
+    #remove NAs from outcomes
+    good <- outcomes[!is.na(outcomes[,col]),c(2,col)]
     
     # return hospital(s) with lowest 30-day death rate
+    best.hosp <- good[good[,2] == min(good[,2]),1]
+    
+    # sort output and return lowest value
+    best.hosp[order(best.hosp)[1]]
 }
