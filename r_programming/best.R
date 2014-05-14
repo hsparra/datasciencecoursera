@@ -9,7 +9,7 @@ best <- function(state, outcome) {
     # validate outcome
     # if valid assign index for column
     if (outcome == "heart attack") {
-        col <- 11
+        col <- 13
     } else if (outcome == "heart failure") {
         col <- 19
     } else if (outcome == "pneumonia") {
@@ -24,8 +24,8 @@ best <- function(state, outcome) {
     # set column of interest to numeric
     outcomes[,col] <- as.numeric(outcomes[,col])
 
-    #remove NAs from outcomes
-    good <- outcomes[!is.na(outcomes[,col]),c(2,col)]
+    #remove NAs from outcomes, keep Hosp
+    good <- outcomes[!is.na(outcomes[,col]) & outcomes[,7] == state,c(2,col)]
     
     # return hospital(s) with lowest 30-day death rate
     best.hosp <- good[good[,2] == min(good[,2]),1]
