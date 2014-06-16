@@ -28,8 +28,8 @@ yearly.m <- as.matrix(yearly)
 rownames(yearly.m) <- yearly.m[,1]
 yearly.m[,2] <- yearly.m[,2]/1000
 barplot(yearly.m[,2], ylab="Total Emissions (1000s tons)", xlab="Year")
-lines(yearly.m[,1], yearly.m[,2])
-    lines(yearly, total/1000)
+lines(yearly.m[,2], lwd=3, col="blue")
+points(yearly.m[,2])
     title(main=expression("Total PM"[2.5]*"Emissions by Year"))
 #}
 #)
