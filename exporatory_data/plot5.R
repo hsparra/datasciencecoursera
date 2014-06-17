@@ -21,13 +21,15 @@ merged <- join(bc, SCC)
 # This will give the total emissions by year for vehicles.
 bcvehicle <- ddply(merged[merged$vehicle == TRUE,], .(year), summarize, total=sum(Emissions))
 
-# Plot emissions over time using Base graphics
+# Change year to a factor for graphing
+bcvehicle$year <- factor(bcvehicle$year)
+
+# Create a bar chart showing emissions for each year
+library(ggplot2)
 png(file="plot5.png")
-with(bcvehicle, {
-    plot(year, total, xaxt="n", ylab="Total Emissions", xlab="Year")
-    lines(year, total)
-    axis(1,at=year)
-    title(main=expression("Baltimore City Motor Vehicle PM"[2.5]*"Emissions by Year"))
-}
-)
+
+ggplot(bcvehicle, aes(year, total)) + geom_bar(stat="identity", fill="blue") + 
+    labs(title = expression("Baltimore City Motor Vehicle PM"[2.5]*"Emissions by Year")) + 
+    labs(x="Year", y="Total Emissions (tons)")
+
 dev.off()

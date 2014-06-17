@@ -9,11 +9,14 @@ bc <- subset(NEI, fips == "24510")
 # Summarize Baltimore City emissions by year and type.
 bctype <- ddply(bc, .(year, type), summarize, total=sum(Emissions))
 
+# Change year to a factor for graphing
+bctype$year <- factor(bctype$year)
+
 # Create plot of the emissions by year for each type. 
 # Use a facet to show each type as its own graph.
 library(ggplot2)
 png(file="plot3.png")
-ggplot(bctype, aes(year, total)) + geom_line() + facet_grid(. ~ type) + labs(title = expression("Baltimore City PM"[2.5]*" Emisions by Type")) + 
+ggplot(bctype, aes(year, total)) + geom_bar(stat="identity", fill="blue") + facet_grid(. ~ type) + labs(title = expression("Baltimore City PM"[2.5]*" Emisions by Type")) + 
     labs(x="Year", y="Yearly Emissions (tons)")
 
 dev.off()
