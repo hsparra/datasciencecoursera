@@ -1,0 +1,50 @@
+High Impact Weather Events
+========================================================
+
+## Synopsis
+
+
+
+## Data Processing
+Read in the b2zip Data
+```{r}
+# Abount 410 Mb in size once read in, 902297 rows
+# zz <- bfile("StormData.csv.bz2", "r")
+# data <- read.csv("StormData.csv", nrows=903000)
+```
+
+Summarize data along the lines
+* Affects on humnan health - FATALITIES and INJURIES  for each EVTYPE
+* Economic effects - PROPDMG, CROPDMG for each EVTYPE, look at PROPDMGEXP and CROPDMGEXP which look like give units (ex. K)
+* Mean damage by type
+* Look at linear model (scatterplot?)
+
+```{r}
+# Create smalle r data frame and release rest of original data
+df2 <- subset(data, select=c(BGN_DATE, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP,CROPDMG,CROPDMGEXP))
+rm(data)
+df2$date <- as.Date(df2$BGN_DATE,"%m/%d/%Y")
+df2$year <- as.character(df2$date, format="%Y")
+# Create column for year and populte based on BGN_DATE
+library(plyr)
+# Need to normalize damage amount
+yearly.prop.dmg <- ddply(df2, .(year, EVTYPE), summarize, propertydamage=sum(PROPDMG))
+yearly.rollup <- ddply(yearly.prop.dmg, .(year), summarize, propdmg=sum(propertydamage))
+```
+
+Graphs to look at:
+* Across time
+* By event type
+* Subsetting of health and damage components
+* By geo area (time permitting)
+* By month (time permitting)
+
+## Results
+
+You can also embed plots, for example:
+
+
+```{r fig.width=7, fig.height=6}
+#plot(cars)
+```
+
