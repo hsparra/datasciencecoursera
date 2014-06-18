@@ -57,6 +57,8 @@ yearly.rollup <- ddply(yearly.prop.dmg, .(year), summarize, propdmg=sum(property
 # get average damage
 avgdmg <- mean(yearly.prop.dmg$propertydamage)
 sd <- sd(yearly.prop.dmg$propertydamage)
+# example to select 10 highest
+df2[with(df2, order(-proptot)[1:10]),]
 ggplot(yearly.prop.dmg[yearly.prop.dmg$propertydamage > avgdmg + 2*sd,], aes(x=EVTYPE,y=propertydamage)) + geom_boxplot()
 ```
 
