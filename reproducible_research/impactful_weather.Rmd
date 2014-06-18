@@ -3,7 +3,7 @@ High Impact Weather Events
 
 ## Synopsis
 
-
+Limited collection before 1995: http://www.ncdc.noaa.gov/stormevents/details.jsp
 
 ## Data Processing
 Read in the b2zip Data
@@ -18,18 +18,46 @@ Summarize data along the lines
 * Economic effects - PROPDMG, CROPDMG for each EVTYPE, look at PROPDMGEXP and CROPDMGEXP which look like give units (ex. K)
 * Mean damage by type
 * Look at linear model (scatterplot?)
+* Remove "summary: text" EVTYPES - followed by lines with data
+* Identify highest impact events and use them to see if there is a difference
+
+Create a function to compute the damage amounts
+```{r}
+dmgcalc <- function(base, exp) {
+    ifelse(exp == "H" | exp == "h", base * 100,
+    ifelse(exp == "K" | exp == "k", base * 1000,
+    ifelse(exp == "M" | exp == "m", base * 1000000,
+    ifelse(exp == "B" | exp == "b", base * 1000000000,
+    ifelse(grepl("[0,9]*[.]*[0-9]",exp), base * 10^as.numeric(exp), 0
+    )))))
+}
+```
 
 ```{r}
 # Create smalle r data frame and release rest of original data
-df2 <- subset(data, select=c(BGN_DATE, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP,CROPDMG,CROPDMGEXP))
+df2 <- subset(data, select=c(BGN_DATE, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP,CROPDMG,CROPDMGEXP,F,MAG))
 rm(data)
-df2$date <- as.Date(df2$BGN_DATE,"%m/%d/%Y")
-df2$year <- as.character(df2$date, format="%Y")
+#df2$date <- as.Date(df2$BGN_DATE,"%m/%d/%Y")
+#df2$year <- as.character(df2$date, format="%Y")
+df2 <- within(df2, {
+    PROPDMGEXP <- as.character(PROPDMGEXP)
+    CROPDMGEXP <- as.character(CROPDMGEXP)
+    date <- as.Date(BGN_DATE,"%m/%d/%Y")
+    year <- as.character(date, format="%Y")
+    proptot <- dmgcalc(PROPDMG, PROPDMGEXP)
+    croptot <- dmgcalc(CROPDMG, CROPDMGEXP)
+    totaldmg <- proptot + croptot
+})
 # Create column for year and populte based on BGN_DATE
 library(plyr)
 # Need to normalize damage amount
 yearly.prop.dmg <- ddply(df2, .(year, EVTYPE), summarize, propertydamage=sum(PROPDMG))
 yearly.rollup <- ddply(yearly.prop.dmg, .(year), summarize, propdmg=sum(propertydamage))
+
+# get average damage
+avgdmg <- mean(yearly.prop.dmg$propertydamage)
+sd <- sd(yearly.prop.dmg$propertydamage)
+ggplot(yearly.prop.dmg[yearly.prop.dmg$propertydamage > avgdmg + 2*sd,], aes(x=EVTYPE,y=propertydamage)) + geom_boxplot()
 ```
 
 Graphs to look at:
@@ -41,7 +69,7 @@ Graphs to look at:
 
 ## Results
 
-You can also embed plots, for example:
+You can also embed plots, for example:dt
 
 
 ```{r fig.width=7, fig.height=6}
