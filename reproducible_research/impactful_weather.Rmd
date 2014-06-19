@@ -5,12 +5,20 @@ High Impact Weather Events
 
 Limited collection before 1995: http://www.ncdc.noaa.gov/stormevents/details.jsp
 
+Discuss:
+* Determination of what damage and health effects are (ex. fatalities vs injuries)
+* Change in data beginning 1995 and possibly show graph
+* Event type Total vs average vs biggest individual events (>= 95%)
+
 ## Data Processing
 Read in the b2zip Data
-```{r}
+```{r, cache=TRUE}
 # Abount 410 Mb in size once read in, 902297 rows
 # zz <- bfile("StormData.csv.bz2", "r")
 # data <- read.csv("StormData.csv", nrows=903000, strip.white=TRUE)
+# Create smalle r data frame and release rest of original data
+df2 <- subset(data, select=c(BGN_DATE, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP,CROPDMG,CROPDMGEXP,F,MAG))
+rm(data)
 ```
 
 Summarize data along the lines
@@ -33,11 +41,9 @@ dmgcalc <- function(base, exp) {
 }
 ```
 
-```{r}
-# Create smalle r data frame and release rest of original data
-df2 <- subset(data, select=c(BGN_DATE, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP,CROPDMG,CROPDMGEXP,F,MAG))
-rm(data)
 
+Compute total values to be used in summary calculations
+```{r}
 # Load library that will be used to trim spaces on the EVTYPE variable
 library(stringr)
 
@@ -71,6 +77,8 @@ yearly.rollup <- ddply(yearly.prop.dmg, .(year), summarize, propdmg=sum(property
 
 
 ## Need to combine tornadoes, hurricanes, winds, heat, tropical storms, cold, rain,
+# Should we colapse tropical events (hurricane, typhoon, tropical storm, storm surge) into a single type?
+# Is hail part of thungerstorm?
 cleantypes <- function(x) {
     x[grepl("TORNADO",x)] <- "TORNADO"
     x[grepl("HURRICANE",x)] <- "HURRICANE"
