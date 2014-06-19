@@ -10,7 +10,7 @@ Read in the b2zip Data
 ```{r}
 # Abount 410 Mb in size once read in, 902297 rows
 # zz <- bfile("StormData.csv.bz2", "r")
-# data <- read.csv("StormData.csv", nrows=903000)
+# data <- read.csv("StormData.csv", nrows=903000, strip.white=TRUE)
 ```
 
 Summarize data along the lines
@@ -37,6 +37,10 @@ dmgcalc <- function(base, exp) {
 # Create smalle r data frame and release rest of original data
 df2 <- subset(data, select=c(BGN_DATE, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP,CROPDMG,CROPDMGEXP,F,MAG))
 rm(data)
+
+# Load library that will be used to trim spaces on the EVTYPE variable
+library(stringr)
+
 #df2$date <- as.Date(df2$BGN_DATE,"%m/%d/%Y")
 #df2$year <- as.character(df2$date, format="%Y")
 df2 <- within(df2, {
@@ -47,18 +51,87 @@ df2 <- within(df2, {
     proptot <- dmgcalc(PROPDMG, PROPDMGEXP)
     croptot <- dmgcalc(CROPDMG, CROPDMGEXP)
     totaldmg <- proptot + croptot
+    healthcomp <- INJURIES + FATALITIES
+    EVTYPE <- str_trim(as.character(EVTYPE))
+    EVTYPE <- as.factor(EVTYPE)
 })
+
+
+
+# Only look at records from 1993 onward for property damage. Prior to this only Tornados, Thunderstorm, and Hail damage were recorded.
+# All the largest damages occur from 1993 onward.
+post1992 <- subset(df2, year > 1992)
+
+
 # Create column for year and populte based on BGN_DATE
 library(plyr)
 # Need to normalize damage amount
 yearly.prop.dmg <- ddply(df2, .(year, EVTYPE), summarize, propertydamage=sum(PROPDMG))
 yearly.rollup <- ddply(yearly.prop.dmg, .(year), summarize, propdmg=sum(propertydamage))
 
+
+## Need to combine tornadoes, hurricanes, winds, heat, tropical storms, cold, rain,
+cleantypes <- function(x) {
+    x[grepl("TORNADO",x)] <- "TORNADO"
+    x[grepl("HURRICANE",x)] <- "HURRICANE"
+    x[grepl("HEAT",x)] <- "HEAT"
+    x[grepl("WINDS",x)] <- "HIGH WINDS"
+    x[grepl("RAIN",x)] <- "RAIN"
+    x[grepl("COLD",x)] <- "COLD"
+    x[grepl("FLASH FLOOD",x)] <- "FLASH FLOOD"
+    x[grepl("FLOOD/FLASH",x)] <- "FLOOD/FLASH"
+    x[grepl("HAIL",x)] <- "HAIL"
+    x[grepl("THUNDERSTORM",x)] <- "THUNDERSTORM"
+    x[grepl("TROPICAL STORM",x)] <- "TROPICAL STORM"
+    x<- droplevels(x)
+    x
+}
+
+df2$EVTYPE2 <- df2$EVTYPE
+df2$EVTYPE <- cleantypes(df2$EVTYPE)
+# summarize by type
+typesummary <- ddply(df2, ~EVTYPE, summarize, prop=sum(proptot), avgprop=mean(proptot), 
+                     crop=sum(croptot), avgcrop=mean(croptot),
+                     damage=sum(totaldmg), avgdamage=mean(totaldmg),
+                     fatal=sum(FATALITIES), avgfatal=round(mean(FATALITIES),0), 
+                     injury=sum(INJURIES), avginjury=round(mean(INJURIES),0),
+                     health=sum(healthcomp), avghealth=round(mean(healthcomp),0)
+                     ) 
+# Only look at records from 1993 onward. Prior to this only Tornados, Thunderstorm, and Hail damage were recorded.
+# All the largest damages occur from 1993 onward. NOTE: if taking more than top 100 then pre 1993 instances occur.
+
+
+# Remove all the records have no damage, injuries, or deaths
+typesummary <- subset(typesummary, totaldmg > 0 | health > 0)
+typesummary <- droplevels(typesummary)
+# Function to extract the top 10 values from a data frame based on the passed column
+topvals <- function(df, col, num) {
+    if (is.character(col)) {
+        colnum <- which (colnames(df) == col)
+    } else {
+        colnum <- col
+    }
+    
+    top <- with(df, df[order(-df[colnum])[1:num],])
+    top
+}
+
+# 10 types events with highest average property damage
+bprop <- topvals(typesummary, "prop", 10)
+bavgprop <- topvals(typesummary, "avgprop", 10)
+btot <- topvals(typesummary, "damage", 10)
+bfatal <- topvals(typesummary, "fatal", 10)
+avgfatal <- topvals(typesummary, "avgfatal", 10)
+health <- topvals(typesummary, "health", 10)
+avghealth <- topvals(typesummary, "avghealth",10)
+
 # get average damage
 avgdmg <- mean(yearly.prop.dmg$propertydamage)
 sd <- sd(yearly.prop.dmg$propertydamage)
-# example to select 10 highest
-df2[with(df2, order(-proptot)[1:10]),]
+# example to select 500 highest
+#bigprop <- df2[with(df2, order(-proptot)[1:500]),]
+#bigfatal <- df2[with(df2, order(-FATALITIES)[1:500]),]
+#biginjury <- df2[with(df2, order(-INJURIES)[1:500]),]
 ggplot(yearly.prop.dmg[yearly.prop.dmg$propertydamage > avgdmg + 2*sd,], aes(x=EVTYPE,y=propertydamage)) + geom_boxplot()
 ```
 
@@ -76,5 +149,8 @@ You can also embed plots, for example:dt
 
 ```{r fig.width=7, fig.height=6}
 #plot(cars)
+# Graph to look at distribution for events > 1 std adn > 2 std
+# ggplot(yearly.prop.dmg[yearly.prop.dmg$propertydamage > avgdmg + sd,], aes(x=EVTYPE,y=propertydamage)) + geom_boxplot()
+# ggplot(yearly.prop.dmg[yearly.prop.dmg$propertydamage > avgdmg + 2*sd,], aes(x=EVTYPE,y=propertydamage)) + geom_boxplot()
 ```
 
