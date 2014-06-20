@@ -8,6 +8,7 @@
 
 ## Packages used in this script
 library(plyr)
+library(reshape2)
 
 #  Check for files, if they do not exist expand zip file if zip file exists.
 if (!file.exists("UCI HAR Dataset/")) {
@@ -21,9 +22,8 @@ if (!file.exists("UCI HAR Dataset/")) {
 
 ## Read in training data set and test data sets
 #  and remove variables not interested in at this time.
-###### TEST - remove limit before submitting
-train <- read.table("UCI HAR Dataset/train/X_train.txt", nrow=200)
-test <- read.table("UCI HAR Dataset/test/X_test.txt", nrow=200)
+train <- read.table("UCI HAR Dataset/train/X_train.txt")
+test <- read.table("UCI HAR Dataset/test/X_test.txt")
 
 #  Read in file with variable names
 v <- read.table("UCI HAR Dataset/features.txt")
@@ -47,14 +47,14 @@ actv <- read.table("UCI HAR Dataset/activity_labels.txt")
 #  Read in the activity labels for the training data set, 
 #  get the English decode, then label the training data with the
 #  associated activity
-labels <- read.table("UCI HAR Dataset/train/y_train.txt", nrow=200)
+labels <- read.table("UCI HAR Dataset/train/y_train.txt")
 labels <- join(labels, actv)    # English decode
 train$activity <- labels$V2
 
 #  Read in the activity labels for the test data set, 
 #  get the English decode, then label the test data with the
 #  associated activity
-labels <- read.table("UCI HAR Dataset/test/y_test.txt", nrow=200)
+labels <- read.table("UCI HAR Dataset/test/y_test.txt")
 labels <- join(labels, actv)
 test$activity <- labels$V2
 
