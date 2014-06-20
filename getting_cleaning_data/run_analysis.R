@@ -1,6 +1,6 @@
 ##  Process Galaxy S Smartphone accelerometer data
 #
-#   This script processes the Galaxy S Smartphone accelerometer data
+#   This script processes the Galaxy S II Smartphone accelerometer data
 #   gathered during experiments which recorded the data from volunteers
 #   as they wore the phone on their waist and walked up and down stairs.
 #   See the README.txt included with the data for more information.
@@ -10,8 +10,8 @@
 library(plyr)
 
 #  Check for files, if they do not exist expand zip file if zip file exists.
-if !file.exists("UCI HAR Dataset/") {
-    file.exists("UCI HAR Dataset.zip") {
+if (!file.exists("UCI HAR Dataset/")) {
+    if (file.exists("UCI HAR Dataset.zip")) {
         unz("UCI HAR Dataset.zip")
     } else {
         stop("Data not found. Please run in a directory with the UCI HAR Dataset. ",
@@ -71,5 +71,5 @@ write.table(tidied, "tidied_fit_data.txt")
 #  Get average value for each variable
 averages <- dcast(tidied, activity ~ variable,mean)
 
-#  WRite out averages data set
-write.table(activity, "average_activity_values.txt")
+#  Write out averages data set
+write.table(averages, "average_activity_values.txt")
