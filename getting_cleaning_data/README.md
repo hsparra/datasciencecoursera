@@ -18,5 +18,5 @@ The orignal data came from experiments which recorded the data from volunteers a
 **Variable Reduction**: The tidy dataset is limited to only the mean and standard deviation variables in the data sets. The variabls that represented these measures were identified and only those variables were kept for further processing. The other variables do not appear in the tidy data.
 
 ## For More Information
-* For information regarding the details of how the data was processed see the *Codebook.md* file in this directory.
+* For information regarding the details of how the data was processed see the *CodeBook.md* file in this directory.
 * For more detail on the original data see the README.txt file located at the root level of the data after it has been extracted from the .zip file.
