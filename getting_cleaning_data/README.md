@@ -9,8 +9,8 @@ The orignal data came from experiments which recorded the data from volunteers a
 * Dataset: [UCI HAR Dataset](https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip) (63MB)
 * Full description site where data is available: [Human Activity Recognition Using Smartphones](http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones)
 * Output
-    * **tidied.txt**: This file contains the mean and standard deviation measurements from the orignal data set in three columns (activity, variable, and value).
-    * **averages.txt**: This file contains the averages of the variables found in the tidied.txt file. Each row is one of the six activities and each column is one of the variables.
+    * **ttidied_fit_data.txt**: This file contains the mean and standard deviation measurements from the orignal data set in three columns (activity, variable, and value).
+    * **average_activity_values.txt**: This file contains the averages of the variables found in the tidied.txt file. Each row is one of the six activities and each column is one of the variables.
 
 ## Processing the Data
 **Data Files Used**: Not all data sets were used in the creation of the tidy data sets. For the smartphone accelerometer readings the *X_test.txt* and *X_train.txt* files were used. The files located in the test/Inertial Signals and the train/Inertial Signals were not used. The data in these files can be mapped to the X_test.txt and X_train.txt files.
