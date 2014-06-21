@@ -20,6 +20,35 @@ if (!file.exists("UCI HAR Dataset/")) {
     }
 }
 
+#  Create function to make the variable names more readable.
+#  Use a period '.' between name portions since that is a 
+#  preferred method in the R community. 
+expand.names <- function (x) {
+    x <- sub("Gravity",".gravity",x) 
+    x <- sub("-std()",".standard.deviation",x)
+    x <- sub("^body","body",x)
+    x <- sub("f","frequency",x)
+    x <- sub("bodyBody",".body",x)
+    x <- sub("Body",".body",x)
+    x <- sub("^t.","",x)
+#    x <- sub("AccJerk",".jerk",x)
+    x <- sub("Acc",".acceleration",x)
+    x <- sub("-mean()",".average",x)
+    
+    #x <- sub("-mean()",".average",x)
+#    x <- sub("Gyrojerk",".gyroscope.jerk",x)
+    x <- sub("Gyro",".gyroscope",x)
+x <- sub("Jerk",".jerk",x)
+    x <- sub("Mag",".magnitude",x)
+    x <- sub("-meanFrequency()",".mean",x)
+    x <- sub("-X",".x.axis",x)
+    x <- sub("-Y",".y.axis",x)
+    x <- sub("-Z",".z.axis",x)
+    x <- sub("[)]","",x)
+    x <- sub("[(]","",x)
+    x
+}
+
 ## Read in training data set and test data sets
 #  and remove variables not interested in at this time.
 train <- read.table("UCI HAR Dataset/train/X_train.txt")
@@ -31,9 +60,10 @@ v <- read.table("UCI HAR Dataset/features.txt")
 #  Identify columns to keep by those that contain the characters "mean" or "std"
 v$keep <- grepl("mean()", v$V2) | grepl("std()",v$V2) | grepl("meanFreq()",v$V2)
 
+v$longnames <- expand.names(v$V2)
 #  add column names
-colnames(train) <- v$V2
-colnames(test) <- v$V2
+colnames(train) <- v$longnames
+colnames(test) <- v$longnames
 
 #  Remove columns that will not be used further
 train <- subset(train, select=v$keep)
