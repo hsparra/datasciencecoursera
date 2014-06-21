@@ -2,9 +2,9 @@ Samsung Fit Tidy Dataset Creation
 =================================
 
 ## Introduction
-The *run_analsis.md* script creates a tidy dataset *tidied.txt* of the Galaxy S Smartphone accelerometer data consisting of the mean and standard deviation measurements in the data. Additionally, another tidy dataset *averages.txt1* is created that consists of he averages of the tidied values for each variable and activity combinations.
+The data came from experiments involving 30 participants who wore the Samsung Galaxy S II on their waist and performed a series of activities. Data was taken from the accelerometer and the gyroscope and measurements were created. A total of 561 variables were created by the pre-processing. The *run_analsis.md* script creates a tidy dataset *tidied.txt* of the Galaxy S Smartphone accelerometer data consisting of the mean and standard deviation measurement variables in the data. Additionally, another tidy dataset *averages.txt* is created that consists of he averages of the tidied values for each variable and activity combinations.
 
-The orignal data came from experiments which recorded the data from volunteers as they wore a Galaxy S II smartphone on their waist as they performed different activities. See the README.txt included with the data for more information.
+For more information on the original data and how it was processed see the README.txt.
 
 - Dataset: [UCI HAR Dataset](https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip) (63MB)
 - Full description site where data is available: [Human Activity Recognition Using Smartphones](http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones)
