@@ -10,7 +10,7 @@ For more information on the original data and how it was processed see the READM
 - Full description site where data is available: [Human Activity Recognition Using Smartphones](http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones)
 - Output
     + **tidied_fit_data.txt**: This file contains the mean and standard deviation measurements from the orignal data set in three columns (activity, variable, and value).
-    _ **average_activity_values.txt**: This file contains the averages of the variables found in the tidied.txt file. Each row is one of the six activities and each column is one of the variables.
+    + **average_activity_values.txt**: This file contains the averages of the variables found in the tidied.txt file. Each row is one of the six activities and each column is one of the variables.
 
 ## Instructions
 1. Obtin the test data from the links above and place in a directory.
@@ -22,7 +22,7 @@ For more information on the original data and how it was processed see the READM
 
 **Variable Reduction**: The tidy dataset is limited to only the mean and standard deviation variables in the data sets. The variabls that represented these measures were identified and only those variables were kept for further processing. The other variables do not appear in the tidy data.
 
-**Variable Naming**: The variable names identified in the original data explanation were kept since they were pretty descriptive of the data, although the names used abbrieviated 
+**Variable Naming**: The variable names identified in the original data explanation were expanded so that they would more human readable. See the CodeBoook.md file for more detail.
 
 ## For More Information
 - For information regarding the details of how the data was processed see the *CodeBook.md* file in this directory.
