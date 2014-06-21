@@ -1,6 +1,7 @@
 cleantypes <- function(x) {
     # Change to a character so can more easily change factor levels
     x <- as.character(x)
+    
     # Thunderstorms and Tornadoes
     x[grepl("TORNADO",x)] <- "TORNADO"
     x[grepl("TORNDAO",x)] <- "TORNADO"

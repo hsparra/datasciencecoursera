@@ -1,24 +1,16 @@
-High Impact Weather Events
+Most Harmful and Damaging Weather Event Types in the United States
 ========================================================
 
 ## Synopsis
-TODO - describe and summarize findings
+In this report we aim to show what type of weather events have been the most harmful to human health and which event types have been the most destructive in terms of damage. Having this information can help with the prioritization of the limited government resources by helping focus on those event types which have the most impact. To investigate this we obtained the National Weather Service storm data, specifically for the years 1952 to 2011 (the most recent complete year available). **FINDINGS GO HERE**
 
-Limited collection before 1995: http://www.ncdc.noaa.gov/stormevents/details.jsp
 
-Discuss:
-* Determination of what damage and health effects are (ex. fatalities vs injuries)
-* Change in data beginning 1995 and possibly show graph
-* Event type Total vs average vs biggest individual events (>= 95%)
-* Graphics
-    + barchart of top 5 in each
-    + 
+## Loading and Processing the Raw Data
+From the [Coursera Website (49 Mb)](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2) we obtained the storm data. The single file contains a little over 900,000 observations from the year 1952 to 2011. Per [Limited collection before 1995: http://www.ncdc.noaa.gov/stormevents/details.jsp](http://www.ncdc.noaa.gov/stormevents/details.jsp) only limited data was collected before 1995. Prior to 1995 only data for tornadoes, thunderstorm winds, and hail was collected.
 
-## Data Processing
-Read in the b2zip Data
+### Reading in the data
+First we read in the data contained in the bz2 archive. The data is delimeted with commas with some factors having leading and trailing spaces. There are 902297 rows, so we will specify the number of rows just a little higher.
 ```{r, cache=TRUE}
-# Abount 410 Mb in size once read in, 902297 rows
-# zz <- bfile("StormData.csv.bz2", "r")
 if (file.exists("Stormdata.csv")) {
     df2 <- read.csv("StormData.csv", nrows=903000, strip.white=TRUE)
 } else if (file.exists("StormData.csv.bz2")) {
@@ -26,22 +18,22 @@ if (file.exists("Stormdata.csv")) {
 } else {
     stop("File not Found: Please download the StormData.csv.bz2 file.")
 }
-
-
-# Create smaller data frame and release rest of original data
-df2 <- subset(df2, select=c(BGN_DATE, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP,CROPDMG,CROPDMGEXP,F,MAG))
-#rm(data)
 ```
 
-Summarize data along the lines
-* Affects on humnan health - FATALITIES and INJURIES  for each EVTYPE
-* Economic effects - PROPDMG, CROPDMG for each EVTYPE, look at PROPDMGEXP and CROPDMGEXP which look like give units (ex. K)
-* Mean damage by type
-* Look at linear model (scatterplot?)
-* Remove "summary: text" EVTYPES - followed by lines with data
-* Identify highest impact events and use them to see if there is a difference
+After reading in the data we check the first few rows (there are 902,297).
+```{r}
+dim(df2)
+head(df2,5)
+```
 
-Create a function to compute the damage amounts
+We then only select the columns of interest for this analysis and remove the rest. This will give back memory.
+```{r, cache=TRUE}
+# Create smaller data frame and release rest of original data
+df2 <- subset(df2, select=c(BGN_DATE, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP,CROPDMG,CROPDMGEXP,F,MAG))
+gc()
+```
+
+Since the damage amounts are in different units, we create a function that will calculate the damage for a given base and exponent. In additions to powers of ten the characters H, K, M, and B (both upper and lower case) are used to indicates hundreds, thousands, millions, and billions respectively.
 ```{r}
 dmgcalc <- function(base, exp) {
     ifelse(exp == "H" | exp == "h", base * 100,
@@ -53,14 +45,11 @@ dmgcalc <- function(base, exp) {
 }
 ```
 
+For each record we we calculate the total damage and total health impact. Total damage here consists of the sum of the property damage and crop damage from a given event. We use this definition since both represent economic impact and both can occur from a single event. For health impact we use the sum of the reported fatalities and the reported injuries. Although most people would agree that a fatality has more impact than an injury, here we give them equal weight.  
 
-Compute total values to be used in summary calculations
+We will create a year variable by extracting the year from the begin date in the data. We will also clean up the EVTPE variable at the same time. This factor has leading spaces for some levels which causes them to be treated as a different instance in many functions. For example, "   HIGH TIDE" gets treated differently that "HIGH TIDE". We remove all leading and trailing spaces and then recreate the factor.
 ```{r}
-# Load library that will be used to trim spaces on the EVTYPE variable
 library(stringr)
-
-#df2$date <- as.Date(df2$BGN_DATE,"%m/%d/%Y")
-#df2$year <- as.character(df2$date, format="%Y")
 df2 <- within(df2, {
     PROPDMGEXP <- as.character(PROPDMGEXP)
     CROPDMGEXP <- as.character(CROPDMGEXP)
@@ -73,38 +62,166 @@ df2 <- within(df2, {
     EVTYPE <- str_trim(as.character(EVTYPE))
     EVTYPE <- as.factor(EVTYPE)
 })
-
+```
 
 
 # Only look at records from 1993 onward for property damage. Prior to this only Tornados, Thunderstorm, and Hail damage were recorded.
 # All the 100 largest damages occur from 1993 onward.
 # post1992 <- subset(df2, year > 1992)
 
+The data has many different strings to identify the same event type, for example "THUNDERSTORM" and "TSTM" for thunderstorms. Additionally, for some events the event is identified by name and not type such as "HURRICANE OPAL" instead of just "HURRICANE". We create a function to replace what we have identified as like type events with the same event type.
+```{r}
+cleantypes <- function(x) {
+    # Change to a character so can more easily change factor levels
+    x <- as.character(x)
+    
+    # Thunderstorms and Tornadoes
+    x[grepl("TORNADO",x)] <- "TORNADO"
+    x[grepl("TORNDAO",x)] <- "TORNADO"
+    x[grepl("FUNNEL CLOUD",x)] <- "TORNADO"
+    x[grepl("HAIL",x)] <- "HAIL"
+    x[grepl("THUNDERSTORM",x)] <- "THUNDERSTORM"
+    x[grepl("TSTM",x)] <- "THUNDERSTORM"
+    x[grepl("Tstm",x)] <- "THUNDERSTORM"
+    x[grepl("MICROBURST",x)] <- "MICROBURST"
+    x[grepl("Microburst",x)] <- "MICROBURST"
+    
+    # Tropical Systems
+    x[grepl("HURRICANE",x)] <- "HURRICANE/TROPICAL STORM"
+    x[grepl("Hurricane",x)] <- "HURRICANE/TROPICAL STORM"
+    x[grepl("TYPHOON",x)] <- "HURRICANE/TROPICAL STORM"
+    x[grepl("TROPICAL STORM",x)] <- "HURRICANE/TROPICAL STORM"
+    x[grepl("COASTAL",x)] <- "COASTAL STORM"
+    x[grepl("Coastal",x)] <- "COASTAL STORM"
+    #x[grepl("SURGE",x)] <- "STORM SURGE"
+    x[grepl("SURGE",x)] <- "HURRICANE/TROPICAL STORM"
+    
+    # Heat Waves
+    x[grepl("HEAT",x)] <- "HEAT"
+    x[grepl("Heat",x)] <- "HEAT"
+    x[grepl("WARM",x)] <- "HEAT"
+    
+    # High Winds
+    x[grepl("WIND",x)] <- "HIGH WINDS"
+    x[grepl("Wind",x)] <- "HIGH WINDS"
+    x[grepl("wind",x)] <- "HIGH WINDS"
+    
+    # Excessive Rain
+    x[grepl("RAIN",x)] <- "RAIN"
+    x[grepl("Rain",x)] <- "RAIN"
+    # Period where not enough time to dry out before next rain
+    x[grepl("EXCESSIVE WETNESS",x)] <- "RAIN" 
+    
+    # Extreme Cold and Winter Storms
+    x[grepl("WINTER",x)] <- "WINTER STORM"
+    x[grepl("Winter",x)] <- "WINTER STORM"
+    x[grepl("SNOW",x)] <- "WINTER STORM"
+    x[grepl("Snow",x)] <- "WINTER STORM"
+    x[grepl("BLIZZARD",x)] <- "WINTER STORM"
+    x[grepl("WINTRY MIX",x)] <- "WINTER STORM"
+    x[grepl("COLD",x)] <- "EXTREME COLD"
+    x[grepl("cold",x)] <- "EXTREME COLD"
+    x[grepl("Cold",x)] <- "EXTREME COLD"
+    x[grepl("FREEZE",x)] <- "EXTREME COLD"
+    x[grepl("LOW TEMP",x)] <- "EXTREME COLD"
+    x[grepl("MIX",x)] <- "WINTERY MIX"
+    x[grepl("Mix",x)] <- "WINTERY MIX"
+    x[grepl("FREEZING",x)] <- "WINTERY MIX"
+    x[grepl("Freezing",x)] <- "WINTERY MIX"
+    
+    # Coastal Surf and High Seas
+    x[grepl("SURF",x)] <- "HIGH SURF/RIP CURRENTS"
+    x[grepl("Surf",x)] <- "HIGH SURF/RIP CURRENTS"
+    x[grepl("HIGH SEAS",x)] <- "HIGH SURF/RIP CURRENTS"
+    x[grepl("RIP CURRENT",x)] <- "HIGH SURF/RIP CURRENTS"
+    x[grepl("HIGH SWELLS",x)] <- "ROUGH SEAS"
+    
+    # Flooding
+    x[grepl("FLASH FLOOD",x)] <- "FLASH FLOOD"
+    x[grepl("FLOOD/FLASH",x)] <- "FLASH FLOOD"
+    x[grepl("STREAM",x)] <- "FLASH FLOOD"
+    x[grepl("FLOOD",x)] <- "FLOODING"
+    
+    # Forest and Wildfires
+    x[grepl("FOREST FIRE",x)] <- "FOREST FIRES"
+    x[grepl("WILD",x)] <- "WILDFIRES"
+    
+    # Lightning
+    x[grepl("LIGHTNING",x)] <- "LIGHTNING"
+    x[grepl("LIGHNTING",x)] <- "LIGHTNING"
+    x[grepl("LIGNTNING",x)] <- "LIGHTNING"
+    x[grepl("LIGHTING",x)] <- "LIGHTNING"
+    
+    # Miscellaneous
+    x[grepl("MUD",x)] <- "MUD SLIDES"
+    x[grepl("Mud",x)] <- "MUD SLIDES"
+    x[grepl("ICE JAM",x)] <- "JAM"
+    x[grepl("Ice jam",x)] <- "JAM"
+    x[grepl("ICE FLOW",x)] <- "JAM"
+    x[grepl("AVALANCE",x)] <- "AVALANCHE"
+    x[grepl("HYPOTHERM",x)] <- "HYPOTHERMIA"
+    x[grepl("HYPERTHERM",x)] <- "HYPOTHERMIA"
+    x[grepl("Hypotherm",x)] <- "HYPOTHERMIA"
+    x[grepl("LANDSLIDE",x)] <- "LANDSLIDE"
+    x[grepl("MARINE",x)] <- "MARINE MISHAP"
+    x[grepl("Marine",x)] <- "MARINE MISHAP"
+    
+    # Snow and Ice not able to directly associate with a storm
+    x[grepl("ICE",x)] <- "SNOW/ICE"
+    x[grepl("Ice",x)] <- "SNOW/ICE"
+    x[grepl("GLAZE",x)] <- "SNOW/ICE"
+    x[grepl("Glaze",x)] <- "SNOW/ICE"
+    x[grepl("snow",x)] <- "SNOW/ICE"
+    x[grepl("ICY",x)] <- "SNOW/ICE"
+    x[grepl("SLEET",x)] <- "SNOW/ICE"
+    
+    # Change back into a factor
+    x <- factor(x)
+    x
+}
+```
 
+We then use the function to create a new variable with this cleaned up set of event types.
+```{r, cache=TRUE}
+df2$cleanedEVTYPE <- cleantypes(df2$EVTYPE)
+```
+
+
+# Results
+First we look at the distribution of damage over time.
+
+In order to show what type of events cause the most damage and harm we need to summarize by type of event.
+
+We summarize the data and compute the following for each event type:
+- Total property damage
+- Total crop damage
+- Total of crop and property damage combined
+- Average amount of property damage
+- Average amount of crop damage
+- Average amount of total damage
+- Total number of fatalities
+- Total number of injuries
+- Total number of fatalities and injries compbined
+- Average number of fatalities
+- Average number of injuries
+- Average amount of fatalities and injuries combined
+```{r}
 # Create column for year and populte based on BGN_DATE
 library(plyr)
 
-
-## Need to combine tornadoes, hurricanes, winds, heat, tropical storms, cold, rain,
-# Should we colapse tropical events (hurricane, typhoon, tropical storm, storm surge) into a single type?
-# Is hail part of thungerstorm?
-df2$EVTYPE2 <- df2$EVTYPE
-source("cleantypes.R")
-
-df2$EVTYPE <- cleantypes(df2$EVTYPE)
 # summarize by type
-yearly.prop.dmg <- ddply(df2, .(year, EVTYPE), summarize, propertydamage=sum(totaldmg))
+yearly.prop.dmg <- ddply(df2, .(year, cleanedEVTYPE), summarize, propertydamage=sum(totaldmg))
 yearly.rollup <- ddply(yearly.prop.dmg, .(year), summarize, propdmg=sum(propertydamage))
 
 
-typesummary <- ddply(df2, ~EVTYPE, summarize, prop=sum(proptot), avgprop=mean(proptot), 
+typesummary <- ddply(df2, ~ cleanedEVTYPE, summarize, prop=sum(proptot), avgprop=mean(proptot), 
                      crop=sum(croptot), avgcrop=mean(croptot),
                      damage=sum(totaldmg), avgdamage=mean(totaldmg),
                      fatal=sum(FATALITIES), avgfatal=round(mean(FATALITIES),0), 
                      injury=sum(INJURIES), avginjury=round(mean(INJURIES),0),
                      health=sum(healthcomp), avghealth=round(mean(healthcomp),0)
                      ) 
-# Only look at records from 1993 onward. Prior to this only Tornados, Thunderstorm, and Hail damage were recorded.
+# Only look at records from 1995 onward. Prior to this only Tornados, Thunderstorm, and Hail damage were recorded.
 # All the largest damages occur from 1993 onward. NOTE: if taking more than top 100 then pre 1993 instances occur.
 
 
@@ -162,3 +279,20 @@ You can also embed plots, for example:dt
 # ggplot(yearly.prop.dmg[yearly.prop.dmg$propertydamage > avgdmg + 2*sd,], aes(x=EVTYPE,y=propertydamage)) + geom_boxplot()
 ```
 
+Limited collection before 1995: http://www.ncdc.noaa.gov/stormevents/details.jsp
+
+Discuss:
+* Determination of what damage and health effects are (ex. fatalities vs injuries)
+* Change in data beginning 1995 and possibly show graph
+* Event type Total vs average vs biggest individual events (>= 95%)
+* Graphics
+    + barchart of top 5 in each
+    + 
+    
+Summarize data along the lines
+* Affects on humnan health - FATALITIES and INJURIES  for each EVTYPE
+* Economic effects - PROPDMG, CROPDMG for each EVTYPE, look at PROPDMGEXP and CROPDMGEXP which look like give units (ex. K)
+* Mean damage by type
+* Look at linear model (scatterplot?)
+* Remove "summary: text" EVTYPES - followed by lines with data
+* Identify highest impact events and use them to see if there is a difference
