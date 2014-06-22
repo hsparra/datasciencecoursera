@@ -2,11 +2,11 @@ Most Harmful and Damaging Weather Event Types in the United States
 ========================================================
 
 ## Synopsis
-In this report we aim to show what type of weather events have been the most harmful to human health and which event types have been the most destructive in terms of damage. Having this information can help with the prioritization of the limited government resources by helping focus on those event types which have the most impact. To investigate this we obtained the National Weather Service storm data, specifically for the years 1952 to 2011 (the most recent complete year available). **FINDINGS GO HERE**
+In this report we aim to show what type of weather events have been the most harmful to human health and which event types have been the most destructive in terms of damage. Having this information can help with the prioritization of the limited government resources by helping focus on those event types which have the most impact. To investigate this we obtained the National Weather Service storm data, specifically for the years 1952 to 2011 (the most recent complete year available). From these data we found that flooding and tropical cyclones (hurricanes and tropical storms) have caused much more damage than other types of severe weather. For injuries and fatalities, no two events dominated to the degree like flooding and tropical systems did with damages, however, tornadoes and heat releated events caused had the most impact. Tornadoes caused more than forty percent of all injuries and heat releated events caused more than forty percent of fatalities.
 
 
 ## Loading and Processing the Raw Data
-From the [Coursera Website (49 Mb)](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2) we obtained the storm data. The single file contains a little over 900,000 observations from the year 1952 to 2011. Per [Limited collection before 1995: http://www.ncdc.noaa.gov/stormevents/details.jsp](http://www.ncdc.noaa.gov/stormevents/details.jsp) only limited data was collected before 1995. Prior to 1995 only data for tornadoes, thunderstorm winds, and hail was collected.
+From the [Coursera Website](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2) (49MB) we obtained the storm data. The single file contains a little over 900,000 observations from the year 1952 to 2011. Per the [national weather site](http://www.ncdc.noaa.gov/stormevents/details.jsp) only limited data was collected before 1995. Prior to 1995 only data for tornadoes, thunderstorm winds, and hail was collected.
 
 ### Reading in the data
 First we read in the data contained in the bz2 archive. The data is delimeted with commas with some factors having leading and trailing spaces. There are 902297 rows, so we will specify the number of rows just a little higher.
@@ -34,6 +34,21 @@ df2 <- subset(df2, select=c(BGN_DATE, EVTYPE, FATALITIES, INJURIES, PROPDMG, PRO
 gc()
 ```
 
+
+### Limit data set to post-1994
+Prior to 1995 only data for tornadoes, thunderstorm winds, and hail were gathered, which could skew results since those three categeries have an additional forty-two years of data([Limited collection before 1995](http://www.ncdc.noaa.gov/stormevents/details.jsp) ). We will keep only the data after 1994.
+
+First we extract the year from the begin date in the data.
+```{r, cache=TRUE}
+df2$date <- as.Date(df2$BGN_DATE,"%m/%d/%Y")
+df2$year <- as.character(df2$date, format="%Y")
+```
+
+Next we select only the post 1994 data
+```{r, cache=TRUE}
+df2 <- subset(df2, year > 1994)
+```
+
 ### Put damage amounts into a common unit and remove leading spaces
 Since the damage amounts are in different units, we create a function that will calculate the damage for a given base and exponent. In additions to powers of ten the characters H, K, M, and B (both upper and lower case) are used to indicates hundreds, thousands, millions, and billions respectively.
 ```{r}
@@ -49,14 +64,14 @@ dmgcalc <- function(base, exp) {
 
 For each record we will convert the property damage and the crop damage into dollars. While doing that we will also calculate the total damage and total health impact. Total damage here consists of the sum of the property damage and crop damage from a given event. We use this definition since both represent economic impact and both can occur from a single event. For health impact we use the sum of the reported fatalities and the reported injuries. Although most people would agree that a fatality has more impact than an injury, here we give them equal weight.  
 
-We will create a year variable by extracting the year from the begin date in the data. We will also clean up the EVTPE variable at the same time. This factor has leading spaces for some levels which causes them to be treated as a different instance in many functions. For example, "   HIGH TIDE" gets treated differently that "HIGH TIDE". We remove all leading and trailing spaces and then recreate the factor.
-```{r, cache=TRUE}
+We will clean up the EVTPE variable at the same time. This factor has leading spaces for some levels which causes them to be treated as a different instance in many functions. For example, "   HIGH TIDE" gets treated differently that "HIGH TIDE". We remove all leading and trailing spaces and then recreate the factor.
+```{r, cache=FALSE}
 library(stringr)
 df2 <- within(df2, {
     PROPDMGEXP <- as.character(PROPDMGEXP)
     CROPDMGEXP <- as.character(CROPDMGEXP)
-    date <- as.Date(BGN_DATE,"%m/%d/%Y")
-    year <- as.character(date, format="%Y")
+#    date <- as.Date(BGN_DATE,"%m/%d/%Y")
+#    year <- as.character(date, format="%Y")
     proptot <- dmgcalc(PROPDMG, PROPDMGEXP)
     croptot <- dmgcalc(CROPDMG, CROPDMGEXP)
     totaldmg <- proptot + croptot
@@ -193,7 +208,7 @@ cleantypes <- function(x) {
 ```
 
 We then use the function to create a new variable with this cleaned up set of event types.
-```{r, cache=TRUE}
+```{r}
 df2$cleanedEVTYPE <- cleantypes(df2$EVTYPE)
 ```
 
@@ -201,6 +216,7 @@ df2$cleanedEVTYPE <- cleantypes(df2$EVTYPE)
 ## Results
 In order to show what type of events cause the most damage and harm we need to summarize by type of event.
 
+### Create summary values
 We summarize the data and compute the following for each event type:
 - Total property damage
 - Total crop damage
@@ -218,6 +234,7 @@ We summarize the data and compute the following for each event type:
 library(plyr)
 # yearly.prop.dmg <- ddply(df2, .(year, cleanedEVTYPE), summarize, propertydamage=sum(totaldmg))
 # yearly.rollup <- ddply(yearly.prop.dmg, .(year), summarize, propdmg=sum(propertydamage))
+# yearly.dmg <- ddply(df2, .(year, cleanedEVTYPE), summarize, propertydamage=sum(totaldmg))
 typesummary <- ddply(df2, ~ cleanedEVTYPE, summarize, prop=sum(proptot), avgprop=mean(proptot), 
                      crop=sum(croptot), avgcrop=mean(croptot),
                      damage=sum(totaldmg), avgdamage=mean(totaldmg),
@@ -225,6 +242,7 @@ typesummary <- ddply(df2, ~ cleanedEVTYPE, summarize, prop=sum(proptot), avgprop
                      injury=sum(INJURIES), avginjury=round(mean(INJURIES),0),
                      health=sum(healthcomp), avghealth=round(mean(healthcomp),0)
                      ) 
+# yearly.dmg <- ddply(df2, .(year, cleanedEVTYPE), summarize, propertydamage=sum(totaldmg))
 ```
 
 To simplify things we will remove all summary event types which have not damage or health impact.
@@ -247,7 +265,8 @@ topvals <- function(df, col, num) {
 }
 ```
 
-We will look at the five top event types for causing the most total economic damage over time. First we get the top ten
+### Five weather event types that have caused the most damage
+We will look at the five top event types for causing the most total economic damage over time. First we get the top five.
 ```{r}
 btot <- topvals(typesummary, "damage", 5)
 ```
@@ -259,21 +278,23 @@ ggplot(btot, aes(x=reorder(cleanedEVTYPE, order(damage, decreasing=TRUE)),
                  y=damage/1000000000)) + geom_bar(stat="identity", fill="blue") + 
     xlab("Event Type") + ylab("Total Damage (billions)")
 ```
-As can be seen, the top three type of events in terms of total damage have caused many times more damage than any of the other types of events.
 
-Next we look at the five types of severe weather events that have had the largest impact on health.
-We will look at the five top event types for causing the most total economic damage over time. First we get the top ten
+As can be seen, the top two type of events in terms of total damage, flooding and hurricanes/tropical storms, have caused many times more damage than any of the other types of events. 
+
+### Five weather event types with most impact on health
+Next we look at the five types of severe weather events that have had the largest impact on health. We will look at the five top event types for causing the most total economic damage over time. First we get the top five.
 ```{r}
 health <- topvals(typesummary, "health", 5)
 ```
 
-Now we take a look at them in a bar chart
+Now we take a look at them in a bar chart.
 ```{r}
 ggplot(health, aes(x=reorder(cleanedEVTYPE, order(health, decreasing=TRUE)), 
                  y=health)) + geom_bar(stat="identity", fill="blue") + 
     xlab("Event Type") + ylab("Total of Injuries and Fatalities")
 ```
-Here we see one type of event, tornadoes, has caused more injuries and deaths than any other type of event.
+
+With injuries and fatalities no one or two event types dominates to the degree that we saw with damages. However, tornadoes still seem to have a substantially greater impact on injuries and fatalities than other types of severe weather. 
 
 Since tornadoes have caused more injuries and death, lets see how tornadoes compare to all other weather events combined. For tornadoes we have:
 ```{r}
@@ -285,8 +306,7 @@ and for all others we have:
 colSums(health[health$cleanedEVTYPE != "TORNADO",c("health","injury","fatal")])
 ```
 
-
-As can be seen tornadoes have had a disportionate impact on health compared to other severe weather types. Percentage-wise the impact from tornadoes is dominant across the board.
+Percentage-wise we have:
 ```{r}
 library(scales)
 ratios <- percent(colSums(health[health$cleanedEVTYPE == "TORNADO",c("health","injury","fatal")]) / colSums(health[,c("health","injury","fatal")]))
@@ -294,59 +314,21 @@ names(ratios) <- c("health","injury","fatal")
 ratios
 ```
 
-Tornadoes have caused two thirds of all injuries and almost forty percent of all fatalities. We will look at the top five severe weather types to see if there is another severe weather event that has caused close to as many fatalities as tornadoes.
+Tornadoes have caused more than forty percent of all injuries but only twenty-one  percent of all fatalities. Although twenty-one percent is a large number, will look to see if there is another severe weather type that has has caused a large number of fatalities.
 ```{r}
 bfatal <- topvals(typesummary, "fatal", 5)
 ggplot(bfatal, aes(x=reorder(cleanedEVTYPE, order(fatal, decreasing=TRUE)), 
                  y=fatal)) + geom_bar(stat="identity", fill="blue") + 
     xlab("Event Type") + ylab("Total Fatalities")
+avghealth <- topvals(typesummary, "avghealth",5)
 ```
+
+We see historically heat related events have caused the greatest number of fatalities.
 
 ```{r}
-
-bprop <- topvals(typesummary, "prop", 10)
-bavgprop <- topvals(typesummary, "avgprop", 10)
-btot <- topvals(typesummary, "damage", 10)
-bavgtot <- topvals(typesummary, "avgdamage", 10)
-bfatal <- topvals(typesummary, "fatal", 10)
-avgfatal <- topvals(typesummary, "avgfatal", 10)
-health <- topvals(typesummary, "health", 10)
-avghealth <- topvals(typesummary, "avghealth",10)
+ratios <- percent(colSums(bfatal[bfatal$cleanedEVTYPE == "HEAT",c("health","injury","fatal")]) / colSums(bfatal[,c("health","injury","fatal")]))
+names(ratios) <- c("health","injury","fatal")
+ratios
 ```
 
-Graphs to look at:
-* Across time
-* By event type
-* Subsetting of health and damage components
-* By geo area (time permitting)
-* By month (time permitting)
-
-## Results
-
-You can also embed plots, for example:dt
-
-
-```{r fig.width=7, fig.height=6}
-#plot(cars)
-# Graph to look at distribution for events > 1 std adn > 2 std
-# ggplot(yearly.prop.dmg[yearly.prop.dmg$propertydamage > avgdmg + sd,], aes(x=EVTYPE,y=propertydamage)) + geom_boxplot()
-# ggplot(yearly.prop.dmg[yearly.prop.dmg$propertydamage > avgdmg + 2*sd,], aes(x=EVTYPE,y=propertydamage)) + geom_boxplot()
-```
-
-Limited collection before 1995: http://www.ncdc.noaa.gov/stormevents/details.jsp
-
-Discuss:
-* Determination of what damage and health effects are (ex. fatalities vs injuries)
-* Change in data beginning 1995 and possibly show graph
-* Event type Total vs average vs biggest individual events (>= 95%)
-* Graphics
-    + barchart of top 5 in each
-    + 
-    
-Summarize data along the lines
-* Affects on humnan health - FATALITIES and INJURIES  for each EVTYPE
-* Economic effects - PROPDMG, CROPDMG for each EVTYPE, look at PROPDMGEXP and CROPDMGEXP which look like give units (ex. K)
-* Mean damage by type
-* Look at linear model (scatterplot?)
-* Remove "summary: text" EVTYPES - followed by lines with data
-* Identify highest impact events and use them to see if there is a difference
+We see that heat releated events have caused forty-one percent of fatalities due to severe weather. Tornadoes and heat events together have caused sixty percent of all injuries and deaths due to severe weather.
