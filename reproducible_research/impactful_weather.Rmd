@@ -29,7 +29,6 @@ head(df2,5)
 ### Only keep variables we are interested in
 We then only select the variables of interest for this analysis and remove the rest. This will give back memory.
 ```{r, cache=TRUE}
-# Create smaller data frame and release rest of original data
 df2 <- subset(df2, select=c(BGN_DATE, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP,CROPDMG,CROPDMGEXP,F,MAG))
 gc()
 ```
@@ -70,8 +69,6 @@ library(stringr)
 df2 <- within(df2, {
     PROPDMGEXP <- as.character(PROPDMGEXP)
     CROPDMGEXP <- as.character(CROPDMGEXP)
-#    date <- as.Date(BGN_DATE,"%m/%d/%Y")
-#    year <- as.character(date, format="%Y")
     proptot <- dmgcalc(PROPDMG, PROPDMGEXP)
     croptot <- dmgcalc(CROPDMG, CROPDMGEXP)
     totaldmg <- proptot + croptot
@@ -232,9 +229,6 @@ We summarize the data and compute the following for each event type:
 - Average amount of fatalities and injuries combined
 ```{r, cache=TRUE}
 library(plyr)
-# yearly.prop.dmg <- ddply(df2, .(year, cleanedEVTYPE), summarize, propertydamage=sum(totaldmg))
-# yearly.rollup <- ddply(yearly.prop.dmg, .(year), summarize, propdmg=sum(propertydamage))
-# yearly.dmg <- ddply(df2, .(year, cleanedEVTYPE), summarize, propertydamage=sum(totaldmg))
 typesummary <- ddply(df2, ~ cleanedEVTYPE, summarize, prop=sum(proptot), avgprop=mean(proptot), 
                      crop=sum(croptot), avgcrop=mean(croptot),
                      damage=sum(totaldmg), avgdamage=mean(totaldmg),
@@ -242,7 +236,6 @@ typesummary <- ddply(df2, ~ cleanedEVTYPE, summarize, prop=sum(proptot), avgprop
                      injury=sum(INJURIES), avginjury=round(mean(INJURIES),0),
                      health=sum(healthcomp), avghealth=round(mean(healthcomp),0)
                      ) 
-# yearly.dmg <- ddply(df2, .(year, cleanedEVTYPE), summarize, propertydamage=sum(totaldmg))
 ```
 
 To simplify things we will remove all summary event types which have not damage or health impact.
