@@ -26,13 +26,15 @@ dim(df2)
 head(df2,5)
 ```
 
-We then only select the columns of interest for this analysis and remove the rest. This will give back memory.
+### Only keep variables we are interested in
+We then only select the variables of interest for this analysis and remove the rest. This will give back memory.
 ```{r, cache=TRUE}
 # Create smaller data frame and release rest of original data
 df2 <- subset(df2, select=c(BGN_DATE, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP,CROPDMG,CROPDMGEXP,F,MAG))
 gc()
 ```
 
+### Put damage amounts into a common unit and remove leading spaces
 Since the damage amounts are in different units, we create a function that will calculate the damage for a given base and exponent. In additions to powers of ten the characters H, K, M, and B (both upper and lower case) are used to indicates hundreds, thousands, millions, and billions respectively.
 ```{r}
 dmgcalc <- function(base, exp) {
@@ -45,10 +47,10 @@ dmgcalc <- function(base, exp) {
 }
 ```
 
-For each record we we calculate the total damage and total health impact. Total damage here consists of the sum of the property damage and crop damage from a given event. We use this definition since both represent economic impact and both can occur from a single event. For health impact we use the sum of the reported fatalities and the reported injuries. Although most people would agree that a fatality has more impact than an injury, here we give them equal weight.  
+For each record we will convert the property damage and the crop damage into dollars. While doing that we will also calculate the total damage and total health impact. Total damage here consists of the sum of the property damage and crop damage from a given event. We use this definition since both represent economic impact and both can occur from a single event. For health impact we use the sum of the reported fatalities and the reported injuries. Although most people would agree that a fatality has more impact than an injury, here we give them equal weight.  
 
 We will create a year variable by extracting the year from the begin date in the data. We will also clean up the EVTPE variable at the same time. This factor has leading spaces for some levels which causes them to be treated as a different instance in many functions. For example, "   HIGH TIDE" gets treated differently that "HIGH TIDE". We remove all leading and trailing spaces and then recreate the factor.
-```{r}
+```{r, cache=TRUE}
 library(stringr)
 df2 <- within(df2, {
     PROPDMGEXP <- as.character(PROPDMGEXP)
@@ -64,13 +66,23 @@ df2 <- within(df2, {
 })
 ```
 
-
-# Only look at records from 1993 onward for property damage. Prior to this only Tornados, Thunderstorm, and Hail damage were recorded.
-# All the 100 largest damages occur from 1993 onward.
-# post1992 <- subset(df2, year > 1992)
-
-The data has many different strings to identify the same event type, for example "THUNDERSTORM" and "TSTM" for thunderstorms. Additionally, for some events the event is identified by name and not type such as "HURRICANE OPAL" instead of just "HURRICANE". We create a function to replace what we have identified as like type events with the same event type.
+We look at the first few records to verify conversion.
 ```{r}
+head(df2)
+```
+
+Check for NAs being introduced into totals
+```{r}
+sum(is.na(df2$proptot))
+sum(is.na(df2$croptot))
+sum(is.na(df2$totaldmg))
+sum(is.na(df2$healthcomp))
+```
+
+
+### Combine like event types
+The data has many different strings to identify the same event type, for example "THUNDERSTORM" and "TSTM" for thunderstorms. Additionally, for some events the event is identified by name and not type such as "HURRICANE OPAL" instead of just "HURRICANE". We create a function to replace what we have identified as like type events with the same event type.
+```{r, cache=TRUE}
 cleantypes <- function(x) {
     # Change to a character so can more easily change factor levels
     x <- as.character(x)
@@ -93,7 +105,6 @@ cleantypes <- function(x) {
     x[grepl("TROPICAL STORM",x)] <- "HURRICANE/TROPICAL STORM"
     x[grepl("COASTAL",x)] <- "COASTAL STORM"
     x[grepl("Coastal",x)] <- "COASTAL STORM"
-    #x[grepl("SURGE",x)] <- "STORM SURGE"
     x[grepl("SURGE",x)] <- "HURRICANE/TROPICAL STORM"
     
     # Heat Waves
@@ -187,9 +198,7 @@ df2$cleanedEVTYPE <- cleantypes(df2$EVTYPE)
 ```
 
 
-# Results
-First we look at the distribution of damage over time.
-
+## Results
 In order to show what type of events cause the most damage and harm we need to summarize by type of event.
 
 We summarize the data and compute the following for each event type:
@@ -205,15 +214,10 @@ We summarize the data and compute the following for each event type:
 - Average number of fatalities
 - Average number of injuries
 - Average amount of fatalities and injuries combined
-```{r}
-# Create column for year and populte based on BGN_DATE
+```{r, cache=TRUE}
 library(plyr)
-
-# summarize by type
-yearly.prop.dmg <- ddply(df2, .(year, cleanedEVTYPE), summarize, propertydamage=sum(totaldmg))
-yearly.rollup <- ddply(yearly.prop.dmg, .(year), summarize, propdmg=sum(propertydamage))
-
-
+# yearly.prop.dmg <- ddply(df2, .(year, cleanedEVTYPE), summarize, propertydamage=sum(totaldmg))
+# yearly.rollup <- ddply(yearly.prop.dmg, .(year), summarize, propdmg=sum(propertydamage))
 typesummary <- ddply(df2, ~ cleanedEVTYPE, summarize, prop=sum(proptot), avgprop=mean(proptot), 
                      crop=sum(croptot), avgcrop=mean(croptot),
                      damage=sum(totaldmg), avgdamage=mean(totaldmg),
@@ -221,14 +225,16 @@ typesummary <- ddply(df2, ~ cleanedEVTYPE, summarize, prop=sum(proptot), avgprop
                      injury=sum(INJURIES), avginjury=round(mean(INJURIES),0),
                      health=sum(healthcomp), avghealth=round(mean(healthcomp),0)
                      ) 
-# Only look at records from 1995 onward. Prior to this only Tornados, Thunderstorm, and Hail damage were recorded.
-# All the largest damages occur from 1993 onward. NOTE: if taking more than top 100 then pre 1993 instances occur.
+```
 
-
-# Remove all the records have no damage, injuries, or deaths
+To simplify things we will remove all summary event types which have not damage or health impact.
+```{r}
 typesummary <- subset(typesummary, damage > 0 | health > 0)
 typesummary <- droplevels(typesummary)
-# Function to extract the top 10 values from a data frame based on the passed column
+```
+
+Since we are interested in the "most" impactful weather events we will create a function that will return the top N events of a passed data frame given a specific column to use for determining the largest. This way we can call the function with our data frame and just give a different column to find the top N events of that type based upon one of our calculated values.
+```{r}
 topvals <- function(df, col, num) {
     if (is.character(col)) {
         colnum <- which (colnames(df) == col)
@@ -239,8 +245,65 @@ topvals <- function(df, col, num) {
     top <- with(df, df[order(-df[colnum])[1:num],])
     top
 }
+```
 
-# 10 types events with highest average property damage
+We will look at the five top event types for causing the most total economic damage over time. First we get the top ten
+```{r}
+btot <- topvals(typesummary, "damage", 5)
+```
+
+Now we take a look at them in a bar chart
+```{r}
+library(ggplot2)
+ggplot(btot, aes(x=reorder(cleanedEVTYPE, order(damage, decreasing=TRUE)), 
+                 y=damage/1000000000)) + geom_bar(stat="identity", fill="blue") + 
+    xlab("Event Type") + ylab("Total Damage (billions)")
+```
+As can be seen, the top three type of events in terms of total damage have caused many times more damage than any of the other types of events.
+
+Next we look at the five types of severe weather events that have had the largest impact on health.
+We will look at the five top event types for causing the most total economic damage over time. First we get the top ten
+```{r}
+health <- topvals(typesummary, "health", 5)
+```
+
+Now we take a look at them in a bar chart
+```{r}
+ggplot(health, aes(x=reorder(cleanedEVTYPE, order(health, decreasing=TRUE)), 
+                 y=health)) + geom_bar(stat="identity", fill="blue") + 
+    xlab("Event Type") + ylab("Total of Injuries and Fatalities")
+```
+Here we see one type of event, tornadoes, has caused more injuries and deaths than any other type of event.
+
+Since tornadoes have caused more injuries and death, lets see how tornadoes compare to all other weather events combined. For tornadoes we have:
+```{r}
+health[health$cleanedEVTYPE == "TORNADO", c("health","injury","fatal")]
+```
+
+and for all others we have:
+```{r}
+colSums(health[health$cleanedEVTYPE != "TORNADO",c("health","injury","fatal")])
+```
+
+
+As can be seen tornadoes have had a disportionate impact on health compared to other severe weather types. Percentage-wise the impact from tornadoes is dominant across the board.
+```{r}
+library(scales)
+ratios <- percent(colSums(health[health$cleanedEVTYPE == "TORNADO",c("health","injury","fatal")]) / colSums(health[,c("health","injury","fatal")]))
+names(ratios) <- c("health","injury","fatal")
+ratios
+```
+
+Tornadoes have caused two thirds of all injuries and almost forty percent of all fatalities. We will look at the top five severe weather types to see if there is another severe weather event that has caused close to as many fatalities as tornadoes.
+```{r}
+bfatal <- topvals(typesummary, "fatal", 5)
+ggplot(bfatal, aes(x=reorder(cleanedEVTYPE, order(fatal, decreasing=TRUE)), 
+                 y=fatal)) + geom_bar(stat="identity", fill="blue") + 
+    xlab("Event Type") + ylab("Total Fatalities")
+```
+
+```{r}
+
 bprop <- topvals(typesummary, "prop", 10)
 bavgprop <- topvals(typesummary, "avgprop", 10)
 btot <- topvals(typesummary, "damage", 10)
@@ -249,15 +312,6 @@ bfatal <- topvals(typesummary, "fatal", 10)
 avgfatal <- topvals(typesummary, "avgfatal", 10)
 health <- topvals(typesummary, "health", 10)
 avghealth <- topvals(typesummary, "avghealth",10)
-
-# get average damage
-avgdmg <- mean(yearly.prop.dmg$propertydamage)
-sd <- sd(yearly.prop.dmg$propertydamage)
-# example to select 500 highest
-#bigprop <- df2[with(df2, order(-proptot)[1:500]),]
-#bigfatal <- df2[with(df2, order(-FATALITIES)[1:500]),]
-#biginjury <- df2[with(df2, order(-INJURIES)[1:500]),]
-#ggplot(yearly.prop.dmg[yearly.prop.dmg$propertydamage > avgdmg + 2*sd,], aes(x=EVTYPE,y=propertydamage)) + #geom_boxplot()
 ```
 
 Graphs to look at:
