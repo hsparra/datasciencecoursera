@@ -1,0 +1,59 @@
+Does Choice of Transmission Affect MPG?
+------------------------------------------
+
+---
+title: "regression_proj"
+output: html_document
+---
+
+## Executive Summary
+
+
+## A first look
+Looking at the miles per gallon between cars with automatic transmission and cars with manual transmissions would seem to indicate that the type of transmission does have an impact on mpg and that having a manual transmission would give you better mpg.
+```{r, echo=FALSE}
+# load data for use
+library(datasets)
+cars <- mtcars
+cars$am <- mtcars$am
+cars$am[cars$am == 0] <- "Automatic"
+cars$am[cars$am == 1] <- "Manual"
+boxplot(mpg ~ am, data=cars, xlab="Transmission", ylab="MPG")
+```
+
+However, there are other variables that also impact mpg and they should also be considered. Could the transmission variable be 
+
+## Possible Models
+```{r, echo=FALSE}
+cor(mtcars$mpg, mtcars)
+lm.am <- lm(mpg ~ am, data=mtcars)
+lm.am.cyl <- lm(mpg ~ am + cyl, data=mtcars)
+lm.cyl <- lm(mpg ~ cyl, data=mtcars)
+lm.cyl.am <- lm(mpg ~ cyl + am, data=mtcars)
+lm1 <- lm(mpg ~ ., data=mtcars)
+summary(lm1)
+slm1 <- step(lm1)
+summary(slm1)
+```
+
+## Residuals and Diagnostics
+
+## Conclusion
+
+### Inference and/or Quantified Uncertainty
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
