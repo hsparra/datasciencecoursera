@@ -5,7 +5,31 @@ Does Choice of Transmission Affect MPG?
 title: "regression_proj"
 output: html_document
 ---
+```{r, echo=FALSE}
+# some useful functions for figures
+panel.hist <- function(x, ...)
+{
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(usr[1:2], 0, 1.5) )
+    h <- hist(x, plot = FALSE)
+    breaks <- h$breaks; nB <- length(breaks)
+    y <- h$counts; y <- y/max(y)
+    rect(breaks[-nB], 0, breaks[-1], y, col = "cyan", ...)
+}
 
+## put (absolute) correlations on the upper panels,
+## with size proportional to the correlations.
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
+{
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r <- abs(cor(x, y))
+    txt <- format(c(r, 0.123456789), digits = digits)[1]
+    txt <- paste0(prefix, txt)
+    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+    text(0.5, 0.5, txt, cex = cex.cor * r)
+}
+```
 ## Executive Summary
 
 
@@ -21,7 +45,12 @@ cars$am[cars$am == 1] <- "Manual"
 boxplot(mpg ~ am, data=cars, xlab="Transmission", ylab="MPG")
 ```
 
-However, there are other variables that also impact mpg and they should also be considered. Could the transmission variable be 
+However, there are other variables that also impact mpg and they should also be considered. Looking at all the variables:
+```{r, echo=FALSE}
+cor(mtcars[,1],mtcars[,-1])
+```
+
+
 
 ## Possible Models
 ```{r, echo=FALSE}
@@ -34,6 +63,22 @@ lm1 <- lm(mpg ~ ., data=mtcars)
 summary(lm1)
 slm1 <- step(lm1)
 summary(slm1)
+
+# best models - seem equal
+lm.wt.qsec.am.mult <- lm(mpg ~ wt + qsec + am + am*wt, data=mtcars)
+summary(lm.wt.qsec.am.mult)
+lm5 <- lm(mpg ~ wt + qsec + wt*am, data=mtcars)
+lm.qsec.amwt <- lm(mpg ~ qsec + wt*am, data=mtcars)
+
+lm.wt.hp <- lm(mpg ~ wt + wt*hp, data=mtcars)   # very close
+
+# Plot residuals
+plot(predict(slm1), resid(slm1))
+
+# or
+par(mfrow=c(2,2))
+plot(slm1)
+par(mfrow=c(1,1))
 ```
 
 ## Residuals and Diagnostics
@@ -42,18 +87,13 @@ summary(slm1)
 
 ### Inference and/or Quantified Uncertainty
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r}
-summary(cars)
-```
-
-You can also embed plots, for example:
-
+Appendix
+-----------------------
+## Pairs plot of mtcars variables
 ```{r, echo=FALSE}
-plot(cars)
+pairs(mtcars, upper.panel=panel.smooth, lower.panel=panel.cor, col=3 + (mtcars$am == 0))
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. 
