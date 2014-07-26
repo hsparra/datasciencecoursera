@@ -1,10 +1,8 @@
-Does Choice of Transmission Affect MPG?
-------------------------------------------
+---
+title: "Does Choice of Transmission Affect MPG?"
+output: html_document
+---
 
----
-title: "regression_proj"
-output: pdf_document
----
 ```{r, echo=FALSE}
 # some useful functions for figures
 panel.hist <- function(x, ...)
@@ -17,42 +15,61 @@ panel.hist <- function(x, ...)
     rect(breaks[-nB], 0, breaks[-1], y, col = "cyan", ...)
 }
 
-```
-## Executive Summary
-In this analysis we explore the mtcars dataset that comes with R to explore the relationship between the variables and miles per gallon (mpg). In particular, we seek to address the following two questions:
-1. Is an automatic or manual transmission better for MPG
-2. Quantify the MPG difference between automatic and manual transmissions
-
-For those with little time the quick take away is that our analysis showed
-1. Having a manual transmission will ...
-2. Observation 2...
-
-## Exploratory Data Analysis
-In this section we will explore various relationship among the variables in the data. 
-
-Looking at the miles per gallon between cars with automatic transmission and cars with manual transmissions would seem to indicate that the type of transmission does have an impact on mpg and that having a manual transmission would give you better mpg.
-```{r, echo=FALSE}
-# load data for use
+# Prepare data
 library(datasets)
 cars <- mtcars
 cars$am <- factor(mtcars$am, labels=c("Automatic", "Manual"))
 cars$vs <- factor(mtcars$vs)
 cars$qear <- factor(mtcars$gear)
 cars$carb <- factor(mtcars$carb)
-boxplot(mpg ~ am, data=cars, xlab="Transmission", ylab="MPG")
+```
+## Executive Summary
+In this analysis we explore the mtcars dataset that comes with R to explore the relationship between the variables and miles per gallon (mpg). In particular, we seek to address the following questions:
+
+- Is an automatic or manual transmission better for MPG
+- Quantify the MPG difference between automatic and manual transmissions
+
+For those with little time the quick take away is that our analysis showed  
+
+- Having a manual transmission will ...
+- Observation 2...
+
+## Exploratory Data Analysis
+In this section we will explore various relationship among the variables in the data.
+Since we are interested in the effects of transmission type on `mpg`  we create a boxbplot of `mpg` when the transmission is `Automatic` and when it is ```Manual```, **figure 1**. The plot shows an increase in ```mpg``` when the transmission is ```Manual```. We can also see a clear difference in the mean mpg for each transmission type.
+```{r}
+aggregate(mpg ~ am, data = cars, mean)
 ```
 
+However, there are other variables that could also impact mpg and they should also be considered. Plotting the data with a pairs plot, figure 1 in appendix, we see that the variables `cyl`, `disp`, `hp`, `wt`, `drat`, and `am` seem to have a strong correlation with `mpg`.
 
-However, there are other variables that also impact mpg and they should also be considered. Plotting the data with a pairs plot, figure 1 in appendix, we see that 
 
-Looking at all the variables:
 ```{r, echo=FALSE}
-cor(mtcars[,1],mtcars[,-1])
+#cor(mtcars[,1],mtcars[,-1])
+```
+
+## Regression Analysis
+
+In this section we start building a linear model based on different variables. We first build a simple model with only `am` as the predictor. 
+```{r}
+lm1 <- lm(mpg ~ am, data=cars)
+summary(lm1)$coef; summary(lm1)$adj.r.squared;
+```
+
+Based on this simple model it appears the transmission type is significant with a p-value < .05. However, the adjusted $R^2$ implies the model only explains about 36% of the variation.
+
+We can do better. We will build a model based on all the predictors, then perform stepwise selection to select significant figures for the final model.
+```{r}
+lm2 <- lm(mpg ~ ., data=cars)
+summary(lm2)$coef[,4]; summary(lm2)$adj.r.squared;
+```
+From this we can see there are variables with p-values > .05. Instead of removing variables manually we will use the step function to perform a forward and backwards stepwise selection.
+```{r}
+slm2 <- step(lm2, direction="both")
+summary(slm2)$coef; summary(slm2)$adj.r.square
 ```
 
 
-
-## Possible Models
 ```{r, echo=FALSE}
 #cor(mtcars$mpg, mtcars)
 #lm.am <- lm(mpg ~ am, data=mtcars)
@@ -102,7 +119,12 @@ cor(mtcars[,1],mtcars[,-1])
 
 Appendix
 -----------------------
-## Pairs plot of mtcars variables
+### **Figure 1:** Boxplot of mpg and transmission
+```{r, echo=FALSE}
+boxplot(mpg ~ am, data=cars, xlab="Transmission", ylab="MPG")
+```
+
+### **Figure 2:** Pairs plot of mtcars variables
 ```{r, echo=FALSE}
 ## put (absolute) correlations on the panel,
 ## with size proportional to the correlations.
