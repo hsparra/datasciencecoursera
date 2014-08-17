@@ -78,6 +78,9 @@ train.sm3 <- train.sm2[,!(colnames(train.sm2) %in% rowsLittleCor[-length(rowsLit
 finalTrain <- train.sm2
 finalTrain <- train.sm3
 
+## Cross Validate predicted performance using rfcv()
+
+
 ## ~~~~~~~~~~~~~~~ Create model ~~~~~~~~~~~~~~~~~~ 
 ## The BEST
 ## TODO - move up higher on final
@@ -95,7 +98,16 @@ test.sm$predRight <- pred == test.sm$classe
 table(pred, test.sm$classe)
 sum(test.sm$predRight)/length(test.sm$predRight)
 qplot(pred, test.sm$classe, colour=test.sm$classe) + geom_jitter()
+confusionMatrix(pred, test.sm$classe)
 
+## Do with train control
+ctrl<- trainControl(method="repeatedcv",repeats=5)
+modFit.tc <- train(classe ~ ., data=finalTrain, method="rf", trControl=ctrl)
+pred.tc <- predict(modFit.tc, test.sm); 
+table(pred.tc, test.sm$classe)
+test.sm$predRightTc <- pred.tc == test.sm$classe
+sum(test.sm$predRightTc)/length(test.sm$predRightTc)
+confusionMatrix(pred.tc, test.sm$classe)
 
 ## ~~~~~~~ The rest ~~~~~~~~
 # try PCA
