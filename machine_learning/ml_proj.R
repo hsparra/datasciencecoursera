@@ -3,14 +3,14 @@ library(psych)
 
 # if doing multi-core
 library(doMC)
-registerDoMC(3)
-
+registerDoMC(2)
 
 #
 # Read in training data
 #data <- read.csv("data/pml-training.csv",stringsAsFactors=F)
 data <- read.csv(unz("data/pml-data.zip","pml-training.csv"),stringsAsFactors=F)
-unlink("data/pml-data.zip")
+#test <- read.csv(unz("data/pml-data.zip","pml-testing.csv"),stringsAsFactors=F)
+
 
 # remove time and person columns
 data <- data[, -c(1:7)]
@@ -19,15 +19,14 @@ inTrain <- createDataPartition(y=data$classe, p=0.7, list=FALSE)
 train <- data[inTrain,]
 test <- data[-inTrain,]
 
+
 ## Select subset for initial testing so does not take so long to iterate
-set.seed(260)
-train.sm <- train[sample(nrow(train), size=2000, replace=FALSE),]
-#train.sm <- data[, -c(1:7)]
+#set.seed(260)
+#train.sm <- train[sample(nrow(train), size=2000, replace=FALSE),]
 
 # Check for zero covariates and remove
-nsv2 <- nearZeroVar(train.sm, saveMetrics = TRUE)
-nsv <- nearZeroVar(train.sm)
-train.sm <- train.sm[,-nsv]
+nsv <- nearZeroVar(train)
+train <- train[,-nsv]
 
 # function to check for excessive NAs for a variable and remove
 naCheck <- function (df, check) {
@@ -45,8 +44,8 @@ naCheck <- function (df, check) {
   data.frame(colNum=x, colName=y, percent=z, stringsAsFactors=FALSE)
 }
 
-lotsNas <- naCheck(train.sm, .95)
-train.sm2 <- train.sm[,-lotsNas$colNum]
+lotsNas <- naCheck(train, .95)
+train <- train[,-lotsNas$colNum]
 
 # Remove non-numeric columns, Note: could convert instead
 colsOfType <- function (df, type) {
@@ -58,59 +57,36 @@ colsOfType <- function (df, type) {
   x
 }
 
-colsToRemove <- colsOfType(train.sm2, "integer")
-train.sm2 <- train.sm2[,-colsToRemove]
+colsToRemove <- colsOfType(train, "integer")
+train <- train[,-colsToRemove]
 
 # make resonse a factor
-train.sm2$classe <- as.factor(train.sm2$classe)
+train$classe <- as.factor(train$classe)
 
 # Look for high correlations and remove
-m <- abs(cor(train.sm2[,-28]))
-ft <- train.sm2
-ft$classe <- as.numeric(ft$classe)
-#m <- abs(cor(ft))   # Seems results not as good, but close. 
-
+m <- abs(cor(train[,-28]))
 diag(m) <- 0
-which(m > .8, arr.ind=T)
-## Note: reduced accuracy of results
-#train.sm2 <- train.sm2[, -which(names(train.sm) %in% c("yaw_belt", "gyros_arm_x"))]
-
-# find variables with correlation < 0.05 with classe and remove
-## Keep - results in better prediction on "test" dataset
-## TODO
-#   - Try > .8
-#   - switch back to using the original m and < .05  # Predicted 92.x% on test dataset
-#rowsLittleCor <- row.names(m)[m[,dim(m)[2]] < .02]  # Predicted 92.3% on test dataset
-rowsLittleCor <- row.names(m)[m[,dim(m)[2]] > .8]   # Predicted 92.7 % of test dataset - confusion matrix 95.7% accuracy
-#m <- abs(cor(ft))   # Seems results not as good, but close. 
-#rowsLittleCor <- row.names(m)[m[,dim(m)[2]] < .02]  # Not correlated with classe - confusion matrix 95% on test dataset - 17 variables
-#rowsLittleCor <- row.names(m)[m[,dim(m)[2]] < .01]  # confusion matrix 95.3% - 23 variables
-train.sm3 <- train.sm2[,!(colnames(train.sm2) %in% rowsLittleCor[-length(rowsLittleCor)])]
-
-finalTrain <- train.sm2
-finalTrain <- train.sm3
-
-## Cross Validate predicted performance using rfcv()
+rowsLittleCor <- row.names(m)[m[,dim(m)[2]] > .8]
+train <- train[,!(colnames(train) %in% rowsLittleCor[-length(rowsLittleCor)])]
 
 
 ## ~~~~~~~~~~~~~~~ Create model ~~~~~~~~~~~~~~~~~~ 
-## The BEST
-## TODO - move up higher on final
 # Random Forest 
-modFit <- train(classe ~ ., data=finalTrain, method="rf", prox=TRUE)
+modFit <- train(classe ~ ., data=train, method="rf", prox=TRUE)
 
-test.sm <- test[sample(nrow(test), size=300, replace=FALSE),]
+#test.sm <- test[sample(nrow(test), size=300, replace=FALSE),]
 # Remove same columns as removed on training data
-test.sm <- test.sm[,-nsv]
-test.sm <- test.sm[,-lotsNas$colNum]
-test.sm <- test.sm[,-colsToRemove]
+test <- test[,-nsv]
+test <- test[,-lotsNas$colNum]
+test <- test[,-colsToRemove]
+test$classe <- as.factor(test$classe)
 
-pred <- predict(modFit, test.sm); 
-test.sm$predRight <- pred == test.sm$classe
-table(pred, test.sm$classe)
-sum(test.sm$predRight)/length(test.sm$predRight)
-confusionMatrix(pred, test.sm$classe)
-qplot(pred, test.sm$classe, colour=test.sm$classe) + geom_jitter()
+pred <- predict(modFit, test); 
+test$predRight <- pred == test$classe
+table(pred, test$classe)
+sum(test$predRight)/length(test$predRight)
+confusionMatrix(pred, test$classe)
+qplot(pred, test$classe, colour=test$classe) + geom_jitter()
 
 ## Do with train control
 ctrl<- trainControl(method="repeatedcv",repeats=5, allowParallel=T)
