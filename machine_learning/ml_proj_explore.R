@@ -1,5 +1,4 @@
 library(caret)
-library(psych)
 
 # if doing multi-core
 library(doMC)
@@ -10,7 +9,7 @@ registerDoMC(3)
 # Read in training data
 #data <- read.csv("data/pml-training.csv",stringsAsFactors=F)
 data <- read.csv(unz("data/pml-data.zip","pml-training.csv"),stringsAsFactors=F)
-unlink("data/pml-data.zip")
+#unlink("data/pml-data.zip")
 
 # remove time and person columns
 data <- data[, -c(1:7)]
