@@ -9,6 +9,7 @@ registerDoMC(2)
 # Read in training data
 #data <- read.csv("data/pml-training.csv",stringsAsFactors=F)
 data <- read.csv(unz("data/pml-data.zip","pml-training.csv"),stringsAsFactors=F)
+test.final <- read.csv(unz("data/pml-data.zip","pml-testing.csv"),stringsAsFactors=F)
 #test <- read.csv(unz("data/pml-data.zip","pml-testing.csv"),stringsAsFactors=F)
 
 
@@ -87,6 +88,30 @@ table(pred, test$classe)
 sum(test$predRight)/length(test$predRight)
 confusionMatrix(pred, test$classe)
 qplot(pred, test$classe, colour=test$classe) + geom_jitter()
+
+
+# Predict from test set
+#test.final <- test.final[,-nsv]
+#test.final <- test.final[,-lotsNas$colNum]
+#test.final <- test.final[,-colsToRemove]
+predFinal <- predict(modFit, test.final)
+
+# Function to write answers to file
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+
+pml_write_files(predFinal)
+
+
+### Save final Model
+save(modFit, file="final_computed_model.RData")
+## To read back in
+#load("final_computed_model.RData")
 
 ## Do with train control
 ctrl<- trainControl(method="repeatedcv",repeats=5, allowParallel=T)
