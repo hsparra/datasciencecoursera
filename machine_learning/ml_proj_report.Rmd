@@ -1,0 +1,152 @@
+---
+title: "ml_proj_report"
+output: html_document
+---
+# Summary
+
+# Prep
+Split into training and test datasets
+
+
+## Exploratory
+### create boxplots
+
+### Look for excessive NAs
+
+### Variables that are highly correlated with each other
+
+### Train model
+
+#### Discussion of model output
+Accuracy 99%
+Cross-validation - use default bootstrap with 25 repetitions
+Number of Trees: 500
+OOB estimate of error: ~0.6%
+
+```
+> dim(train)
+[1] 13737    28
+
+> dim(test)
+[1] 5885   20
+```
+
+
+The Final Model
+```{r, eval=FALSE}
+modFit
+```
+```
+Random Forest 
+
+13737 samples
+   27 predictors
+    5 classes: 'A', 'B', 'C', 'D', 'E' 
+
+No pre-processing
+Resampling: Bootstrapped (25 reps) 
+
+Summary of sample sizes: 13737, 13737, 13737, 13737, 13737, 13737, ... 
+
+Resampling results across tuning parameters:
+
+  mtry  Accuracy  Kappa  Accuracy SD  Kappa SD
+  2     0.99      0.988  0.0015       0.0019  
+  14    0.989     0.986  0.00178      0.00225 
+  27    0.984     0.98   0.00285      0.0036  
+
+Accuracy was used to select the optimal model using  the largest value.
+The final value used for the model was mtry = 2. 
+```
+
+```{r, eval=FALSE}
+modFit$finalModel
+```
+```
+Call:
+ randomForest(x = x, y = y, mtry = param$mtry, proximity = TRUE) 
+               Type of random forest: classification
+                     Number of trees: 500
+No. of variables tried at each split: 2
+
+        OOB estimate of  error rate: 0.6%
+Confusion matrix:
+     A    B    C    D    E  class.error
+A 3903    1    0    0    2 0.0007680492
+B   15 2630   13    0    0 0.0105342363
+C    0   10 2373   13    0 0.0095993322
+D    0    0   20 2230    2 0.0097690941
+E    0    0    1    5 2519 0.0023762376
+```
+
+
+
+Confusinon matrix
+```{r, eval=FALSE}
+confusionMatrix(pred, test$classe)
+```
+```
+Confusion Matrix and Statistics
+
+          Reference
+Prediction    A    B    C    D    E
+         A 1672    7    0    0    0
+         B    1 1129    3    0    0
+         C    0    3 1015   13    1
+         D    0    0    8  951    4
+         E    1    0    0    0 1077
+
+Overall Statistics
+                                         
+               Accuracy : 0.993          
+                 95% CI : (0.9906, 0.995)
+    No Information Rate : 0.2845         
+    P-Value [Acc > NIR] : < 2.2e-16      
+                                         
+                  Kappa : 0.9912         
+ Mcnemar's Test P-Value : NA             
+
+Statistics by Class:
+
+                     Class: A Class: B Class: C Class: D Class: E
+Sensitivity            0.9988   0.9912   0.9893   0.9865   0.9954
+Specificity            0.9983   0.9992   0.9965   0.9976   0.9998
+Pos Pred Value         0.9958   0.9965   0.9835   0.9875   0.9991
+Neg Pred Value         0.9995   0.9979   0.9977   0.9974   0.9990
+Prevalence             0.2845   0.1935   0.1743   0.1638   0.1839
+Detection Rate         0.2841   0.1918   0.1725   0.1616   0.1830
+Detection Prevalence   0.2853   0.1925   0.1754   0.1636   0.1832
+Balanced Accuracy      0.9986   0.9952   0.9929   0.9920   0.9976
+```
+
+### Most important variables
+```{r, eval=FALSE}
+varImp(modFit)
+```
+```
+rf variable importance
+
+  only 20 most important variables shown (out of 27)
+
+                  Overall
+roll_belt          100.00
+yaw_belt            78.91
+magnet_dumbbell_z   61.87
+pitch_forearm       61.70
+pitch_belt          55.43
+roll_dumbbell       44.11
+roll_forearm        42.63
+roll_arm            31.21
+gyros_belt_z        29.18
+yaw_dumbbell        27.41
+magnet_forearm_z    27.14
+gyros_dumbbell_y    26.93
+yaw_arm             26.12
+pitch_dumbbell      24.99
+magnet_forearm_y    23.17
+yaw_forearm         18.98
+pitch_arm           13.63
+gyros_arm_y         11.72
+gyros_dumbbell_x    11.17
+gyros_arm_x         10.92
+```
