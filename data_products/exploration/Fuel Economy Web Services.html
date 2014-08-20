@@ -1,0 +1,742 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+ "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+
+	<!-- Core CSS and JS files for site -->
+    	<!-- CSS for generic YUI -->
+	<link rel="stylesheet" href="http://yui.yahooapis.com/2.8.2/build/reset-fonts-grids/reset-fonts-grids.css" type="text/css">
+
+	<!-- CSS for FEG Home Page -->
+	<link rel="stylesheet" type="text/css" href="/feg/includes/home.css">
+    
+    <!-- CSS for Top Nav Mega Menu -->
+    <link rel="stylesheet" href="/feg/includes/mainmenu.css" type="text/css" media="screen" >
+
+	<!-- CSS for left navigation and main content -->
+	<link rel="stylesheet" type="text/css" href="/feg/includes/main-content.css">
+	<link rel="stylesheet" type="text/css" href="/feg/includes/left-nav.css">
+    
+    <!-- CSS for Breadcrumbs -->
+	<style type="text/css">
+		.breadcrumbs{font-size: 93%; color:#666666; padding-bottom: .308em; *padding-bottom: .3em;}
+		.breadcrumbs a:visited{color:#000099}
+	</style>
+
+	<!-- Dependency source files -->
+	<script type="text/javascript" src="http://yui.yahooapis.com/2.8.2/build/utilities/utilities.js"></script>
+	<script type="text/javascript" src="http://yui.yahooapis.com/2.8.2/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+	<script type="text/javascript" src="http://yui.yahooapis.com/2.8.2/build/animation/animation-min.js"></script>
+	<script type="text/javascript" src="http://yui.yahooapis.com/2.8.2/build/container/container-min.js"></script>
+
+	<!-- Menu source file -->
+	<script type="text/javascript" src="http://yui.yahooapis.com/2.8.2/build/menu/menu-min.js"></script>
+
+	<!-- Script for Mega-Menu -->
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="/feg/includes/jquery.megamenu.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $("#megamenu").megamenu();
+			$('#megamenu').show();
+        });
+    </script>
+   
+      
+    <!-- CSS AND JS INCLUDES FOR ACCORDIONS, TABS, CAROUSELS, ETC. HERE --> 
+    <!-- include file="includes/accordion-yui3.html" -->
+    <!-- include file="includes/rounded-tabs.html" -->
+    <!-- include file="includes/carousel.html" -->
+    
+    <!-- ADD LOCAL STYLES HERE --> 
+    
+   
+    
+    <!-- ADD LOCAL SCRIPT HERE --> 
+    
+    <title>Fuel Economy Web Services</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<meta name="keywords" content="Fuel Economy, Web Services, API">
+	<meta name="description" content="Fueleconomy.gov offers web services for developers interested in using the fuel economy database">
+  
+</head>
+<body class="yui-skin-sam">
+<div id="doc4" class="yui-t7">
+  <!-- Skip navigation for accessbility -->
+<div class="skipnav"><a href="#content">Skip to main content</a></div>
+
+<!--(50% each column) for sponsors below-->
+<div class="sponsor">
+	<div class="yui-g">
+		<div class="yui-u first">
+			<a href="http://www.eere.energy.gov" target="_parent"><img src="http://www.fueleconomy.gov/feg/images/home/energy.gif" alt="U.S. Department of Energy - Energy Efficiency and Renewable Energy" width="224" height="34"></a>
+		</div>
+  		<div class="yui-u" style="text-align:right; padding-bottom:0">
+			<a href="http://www.epa.gov/otaq/" target="_parent"><img src="http://www.fueleconomy.gov/feg/images/home/EPAheadersm2.gif" alt="U.S. Environmental Protection Agency - Office of Transportation and Air Quality" width="300" height="34"></a>
+        </div>
+    
+	</div>
+</div>
+<!-- end sponsor -->
+
+ 
+<!-- Start banner & banner menu -->    
+<div id="hd" role="banner">
+    <div class="yui-g">
+        <div class="yui-u first">
+            <div style="margin: 3px 0 2px 0"><a href="http://www.fueleconomy.gov" target="_parent"><img alt="www.fueleconomy.gov - the official government source for fuel economy information" src="/feg/images/home/fe-logo-bs.png" style="margin: 5px 0 5px 0; text-decoration: none;"></a></div>	  
+        </div>
+        <div class="yui-u" style="text-align:right; padding-bottom:0">
+            <div class="headerNav">
+				<a href="http://fueleconomy.gov/m">Mobile</a>
+				<a href="http://www.fueleconomy.gov/feg/esIndex.shtml">Espa&ntilde;ol</a>
+				<a href="http://www.fueleconomy.gov/feg/sitemap.shtml">Site Map</a>
+				<a href="http://www.fueleconomy.gov/feg/links.shtml">Links</a>
+				<a href="http://www.fueleconomy.gov/feg/info.shtml">FAQ</a>
+				<a href="http://www.fueleconomy.gov/feg/motorweek.jsp">Videos</a>
+				<a href="http://www.fueleconomy.gov/feg/contacts.shtml">Contacts</a></div>
+        </div>
+    </div>
+    <!-- Start megamenu -->
+
+    <ul id="megamenu" class="megamenu" style="display:none">
+        <li>
+            <a href="javascript:void(0)">Find a Car</a>
+            <div class="submenu" style="width: 73.2em; *width: 73em;">
+                <div class="pnlSubmenu">
+                    <h3><a href="http://www.fueleconomy.gov/feg/findacar.shtml">Searches</a></h3>
+                    <ul>
+                        <li><a href="http://www.fueleconomy.gov/feg/findacar.shtml">Find a Car &ndash; Home</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/Find.do?action=sbsSelect">Compare Side by Side</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/powerSearch.jsp">Power Search</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/make.shtml">Search by Make</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/alternatives.shtml">Cars That Don't Need Gasoline</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/SmartWay.do">Find a SmartWay Vehicle</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/best-worst.shtml">Best and Worst Vehicles</a></li>
+						<li><a href="http://www.fueleconomy.gov/feg/topten.jsp">Fueleconomy.gov Top Ten</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/mostViewed.shtml">Today's Most Viewed Vehicles</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/printGuides.shtml">Print the Guide</a></li>
+                    </ul>
+                </div>
+    
+                <div class="pnlSubmenu">
+                    <h3><a href="http://www.fueleconomy.gov/feg/findacar.shtml">Find a Car &ndash; Home</a></h3>
+                    <div class="img-caption" style="width: 15.385em; height: 14.23em; *width: 15em; *height: 13.875em;">
+                        <a href="http://www.fueleconomy.gov/feg/findacar.shtml">
+                            <img class="img-caption" src="/feg/images/topnav/findacar2_mm.jpg" alt="">
+                        </a>
+                        <ul>
+                            <li><a href="http://www.fueleconomy.gov/feg/findacar.shtml">Find a fuel efficient vehicle that meets your needs</a></li>
+                        </ul>
+                  	</div>
+                </div>
+                   
+                <div class="pnlSubmenu">
+                    <h3><a href="http://www.fueleconomy.gov/feg/printGuides.shtml">Print the Guide</a></h3>
+                    <div class="img-caption" style="width: 15.385em; height: 14.23em; *width: 15em; *height: 13.875em;">
+                        <a href="http://www.fueleconomy.gov/feg/printGuides.shtml">
+                            <img src="/feg/images/topnav/guide-cover-partial-2014.jpg" alt="2014 Fuel Economy Guide">
+                        </a>
+                        <ul>
+                            <li><a href="http://www.fueleconomy.gov/feg/printGuides.shtml">Guides available back to the 2000 model year</a></li>
+                      </ul>
+                  	</div>
+                </div>
+                
+                <div class="pnlSubmenu"  style="margin-right: 0;">
+                    <h3><a href="http://www.fueleconomy.gov/feg/UsedCarLabel.jsp">Used Car Label Tool</a></h3>
+                    <div class="img-caption" style="width: 15.385em; height: 14.23em; *width: 15em; *height: 13.875em;">
+                        <a href="http://www.fueleconomy.gov/feg/UsedCarLabel.jsp">
+                            <img src="/feg/images/topnav/used-label-med.png" alt="Used Car Label">
+                        </a>
+                        <ul>
+                            <li><a href="http://www.fueleconomy.gov/feg/UsedCarLabel.jsp">Selling your car? We can help you advertise its mpg.</a></li>
+                      </ul>
+                  	</div>
+                </div>
+                <div style="clear:both"></div>
+            </div>
+        </li>
+    
+        <li>
+            <a href="javascript:void(0)">Save Money &amp; Fuel</a>
+            <div class="submenu" style="width: 70em; *width: 67em;">
+                <div class="pnlSubmenu">
+                    <h3><a href="http://www.fueleconomy.gov/feg/drive.shtml">Gas Mileage Tips</a></h3>
+                    <ul>
+                        <li><a href="http://www.fueleconomy.gov/feg/driveHabits.jsp">Driving More Efficiently</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/maintain.jsp">Keeping Your Car in Shape</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/planning.shtml">Planning and Combining Trips</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/choosing.jsp">Choosing a More Efficient Vehicle</a></li>
+						<li><a href="http://www.fueleconomy.gov/feg/evtips.shtml">Tips for Hybrids, Plug-in Hybrids,<br>and EVs</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/coldweather.shtml">Fuel Economy in Cold Weather</a></li>
+						<li><a href="http://www.fueleconomy.gov/feg/hotweather.shtml">Fuel Economy in Hot Weather</a></li>								
+                        <li><a href="http://www.fueleconomy.gov/feg/moinfo.shtml">More Information</a></li>
+                    </ul>
+                </div>
+    
+                <div class="pnlSubmenu">
+                    <h3><a href="http://www.fueleconomy.gov/feg/taxcenter.shtml">Tax Incentives</a></h3>
+                    <ul> 
+                        <li><a href="http://www.fueleconomy.gov/feg/taxevb.shtml">Electric Vehicles</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/taxphevb.shtml">Plug-in Hybrids</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/taxfaqs.shtml">Frequently Asked Questions</a></li>
+                    </ul>
+                </div>
+    
+                <div class="pnlSubmenu">
+                    <h3><a href="http://www.fueleconomy.gov/feg/gasprices/index.shtml">Gasoline Prices</a></h3>
+                    <ul>
+                        <li><a href="http://www.fueleconomy.gov/feg/gasprices/states/index.shtml">Local Prices</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/gasprices/faq.shtml">Questions About Gas Prices</a></li>
+                    </ul>
+                </div>
+    
+                <div class="pnlSubmenu" style="margin-right: 0;">
+                    <h3>Cost Calculators</h3>
+                    <ul>
+                        <li><a href="http://www.fueleconomy.gov/feg/savemoney.shtml">Fuel Savings Calculator</a></li>
+                        <li><a href="http://www.fueleconomy.gov/trip">Trip Calculator</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/hybridCompare.jsp">Can a Hybrid Save Me Money?</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/Find.do?action=phev1Prompt">My Plug-in Hybrid Calculator</a></li>
+                    </ul>   
+                </div>
+                <div style="clear: both"></div>
+            </div><!-- submenu -->
+        </li>
+    
+        <li>
+            <a href="javascript:void(0)">Benefits</a>
+            <div class="submenu" style="width: 43.846em; *width: 43.7em;">
+                <div class="pnlSubmenu">
+                    <h3><a href="http://www.fueleconomy.gov/feg/why.shtml">Why is fuel economy important?</a></h3>
+                    <ul>
+                        <li><a href="http://www.fueleconomy.gov/feg/climate.shtml">Climate Change</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/oildep.shtml">Oil Dependence Costs</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/consres.shtml">Sustainability</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/savemoney.shtml">Save Money</a></li>
+                    </ul>
+                </div>
+                <div class="pnlSubmenu" style="margin-right: 0;">
+                    <div class="img-caption" style="width: 19.23em; *width: 18.75em">
+                        <a href="http://www.fueleconomy.gov/feg/climate.shtml">
+                            <img src="/feg/images/topnav/HouseholdCO2Pie_mm.jpg" alt="" class="img-caption">
+                        </a>
+                      	<ul>
+                    		<li><a href="http://www.fueleconomy.gov/feg/climate.shtml">Vehicles produce about half of the greenhouse gases from a typical U.S. household.</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div style="clear: both"></div>
+            </div>
+        </li>
+        <li>
+		<a href="javascript:void(0)">My&nbsp;MPG</a>
+            <div class="submenu" style="width: 42.3em; *width: 41.25em;">
+			<div class="pnlSubmenu">
+            	<h3><a href="https://www.fueleconomy.gov/mpg/MPG.do">My MPG - Home</a></h3>
+                    <div class="img-caption" style="width: 15.385em;  height: 16.08em; *width: 15em; *height: 15.68em;">
+                    <a href="https://www.fueleconomy.gov/mpg/MPG.do">
+                            <img src="/feg/images/topnav/fuel_pump_mm.jpg" alt="" class="img-caption">
+                        </a>
+                      	<ul>
+                            <li><a href="https://www.fueleconomy.gov/mpg/MPG.do">We can help you calculate and track your fuel economy.</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="pnlSubmenu" style="margin-right: 0;">
+                    <h3><a href="http://www.fueleconomy.gov/mpg/MPG.do?action=browseList">MPG Estimates from Drivers Like You!</a></h3>
+                    <div class="img-caption" style="width: 20.69em;  height: 16.08em; *width: 20.12em; *height: 15.68em;">
+                        <a href="http://www.fueleconomy.gov/mpg/MPG.do?action=browseList">
+                            <img src="/feg/images/topnav/my-mpg-graph.gif" alt="" class="img-caption">
+                    </a>
+                </div>
+            </div>
+            
+            <div style="clear: both"></div>
+        </div>
+	</li>
+        <!-- Advanced Vehicles and Fuels -->
+        <li>
+            <a href="javascript:void(0)">Advanced Vehicles &amp; Fuels</a>
+            <div class="submenu" style="width: 70.2em; *width: 70em;">
+                <div class="pnlSubmenu">
+                    <h3><a href="http://www.fueleconomy.gov/feg/hybrids.jsp">Hybrids</a></h3>
+                    <ul>
+                        <li><a href="http://www.fueleconomy.gov/feg/hybrids.jsp">Compare Side by Side</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/hybridtech.shtml">How Hybrids Work</a></li>
+                    	<li><a href="http://www.fueleconomy.gov/feg/hybridCompare.jsp">Can a Hybrid Save Me Money?</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/hybrid_news.shtml">New &amp; Upcoming</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/hybrid_links.shtml">Links</a></li>
+                    </ul>
+    
+                    <h3 class="stacked"><a href="http://www.fueleconomy.gov/feg/phevsbs.shtml">Plug-In Hybrids</a></h3>
+                    <ul>
+                        <li><a href="http://www.fueleconomy.gov/feg/phevsbs.shtml">Compare Side by Side</a></li>        
+                        <li><a href="http://www.fueleconomy.gov/feg/Find.do?action=phev1Prompt">My Plug-in Hybrid Calculator</a></li>        
+                        <li><a href="http://www.fueleconomy.gov/feg/phevtech.shtml">About Plug-in Hybrids</a></li>
+						<li><a href="http://www.fueleconomy.gov/feg/phevanim.shtml">How Plug-in Hybrids Save<br>Money</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/phevnews.shtml">New &amp; Upcoming</a></li>
+						<li><a href="http://www.fueleconomy.gov/feg/greenpower.shtml">Green Power</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/taxphevb.shtml">Tax Incentives</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/phevlinks.shtml">Links</a></li>
+                    </ul> 
+                </div>
+    
+                <div class="pnlSubmenu">
+                    <h3><a href="http://www.fueleconomy.gov/feg/evsbs.shtml">All-Electric Vehicles</a></h3>
+                    <ul>
+                        <li><a href="http://www.fueleconomy.gov/feg/evsbs.shtml">Compare Side by Side</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/evtech.shtml">About Electrics</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/evnews.shtml">New &amp; Upcoming</a></li>
+						<li><a href="http://www.fueleconomy.gov/feg/greenpower.shtml">Green Power</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/taxevb.shtml">Tax Incentives</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/evlinks.shtml">Links</a></li>
+                    </ul>
+                    
+                    <h3 class="stacked"><a href="http://www.fueleconomy.gov/feg/flextech.shtml">Flex-Fuel Vehicles</a></h3>
+                    <ul>
+                        <li><a href="http://www.fueleconomy.gov/feg/flextech.shtml">Flex-Fuel Vehicles</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/flexlinks.shtml">Links</a></li>
+                    </ul>
+                </div>
+    
+                <div class="pnlSubmenu">
+                    <h3><a href="http://www.fueleconomy.gov/feg/diesels.jsp">Diesels</a></h3>
+                    <ul>
+                        <li><a href="http://www.fueleconomy.gov/feg/diesels.jsp">Compare Side by Side</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/di_diesels.shtml">About Diesels</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/dieselnews.shtml">New &amp; Upcoming</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/lowsulfurdiesel.shtml">Ultra-Low Sulfur Diesel</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/biodiesel.shtml">Biodiesel</a></li> 
+                        <li><a href="http://www.fueleconomy.gov/feg/diesellinks.shtml">Diesel Links</a></li>
+                    </ul>
+                </div>
+    
+                <div class="pnlSubmenu">
+                    <h3><a href="http://www.fueleconomy.gov/feg/fcv_sbs.shtml">Fuel Cell Vehicles</a></h3>
+                    <ul>
+						<li><a href="http://www.fueleconomy.gov/feg/fcv_sbs.shtml">Compare Side by Side</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/fcv_PEM.shtml">How They Work</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/fcv_benefits.shtml">Benefits and Challenges</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/fcv_whatsnew.jsp">Videos </a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/fcv_links.shtml">Fuel Cell Links</a></li>
+                    </ul>
+                </div>
+    
+                <div class="pnlSubmenu" style="margin-right: 0;">
+                    <h3><a href="http://www.fueleconomy.gov/feg/current.shtml">Alternative Fuels</a></h3>
+                    <ul>
+                        <li><a href="http://www.fueleconomy.gov/feg/current.shtml">Alternative Fuels</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/ethanol.shtml">Ethanol</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/bifueltech.shtml">Natural Gas</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/lpg.shtml">Propane</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/hydrogen.shtml">Hydrogen</a></li>
+                    </ul>
+                </div>
+    
+                <div style="clear: both"></div>
+    
+            </div><!-- submenu -->
+        </li><!-- End of Advanced Vehicles and Fuels -->
+    
+        <li>
+            <a href="javascript:void(0)">About EPA Ratings</a>
+            <div class="submenu" style="width: 72.3em; *width: 71.5em;">
+                <div class="pnlSubmenu">
+                    <h3><a href="http://www.fueleconomy.gov/feg/label/">New Window Sticker</a></h3>
+    
+                    <ul>
+                        <li><a href="http://www.fueleconomy.gov/feg/label/">About the New Label</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/label/calculator.jsp">Beyond Tailpipe Emissions</a></li>
+                        <li><p>Sample Labels:</p>
+                            <ul style="margin-left: 1em; *margin-left: .975em;">
+                                <li><a href="http://www.fueleconomy.gov/feg/label/learn-more-gasoline-label.shtml">Gasoline Vehicles</a></li>
+                                <li><a href="http://www.fueleconomy.gov/feg/label/learn-more-PHEV-label.shtml">Plug-in Hybrid Vehicles</a></li>
+                                <li><a href="http://www.fueleconomy.gov/feg/label/learn-more-electric-label.shtml">Electric Vehicles</a></li>                                               
+                            </ul>
+                        </li>
+                        <li><a href="http://www.fueleconomy.gov/feg/label/video.shtml">QR Codes</a></li>      
+                    </ul>
+                </div>
+                
+                <div class="pnlSubmenu">
+                    <div class="img-caption" style="width: 17.692em; *width: 17.25em; background-color: #fff;">
+                        <a href="http://www.fueleconomy.gov/feg/label/"><img src="/feg/images/topnav/new_epa_label_mm.gif" alt="New EPA Fuel Economy and Environment Label"></a>
+                        <ul>
+                            <li><a style="color: #003366;" href="http://www.fueleconomy.gov/feg/label/">Check out the new sticker!</a></li>
+                        </ul>
+                    </div>
+                </div>
+    
+                <div class="pnlSubmenu">
+                    <h3><a href="http://www.fueleconomy.gov/feg/ratings2008.shtml">New vs. Old Ratings</a></h3>
+                    <ul>
+                        <li><a href="http://www.fueleconomy.gov/feg/ratings2008.shtml">2008 Ratings Changes</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/calculatorSelectYear.jsp">Compare Old and New MPG</a></li>
+                    </ul>
+                
+                    <h3 class="stacked"><a href="http://www.fueleconomy.gov/feg/how_tested.shtml">Fuel Economy Tests</a></h3>
+                    <ul>
+                        <li><a href="http://www.fueleconomy.gov/feg/how_tested.shtml">How Vehicles Are Tested</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/which_tested.shtml">Which Vehicles Are Tested</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/fe_test_schedules.shtml">Detailed Test Information</a></li>
+                    </ul>
+                </div>
+                
+                <div class="pnlSubmenu" style="margin-right: 0;">
+                    <h3><a href="http://www.fueleconomy.gov/feg/why_differ.shtml">Your Mileage Will Still Vary</a></h3>
+                    <ul>
+                        <li><a href="http://www.fueleconomy.gov/feg/why_differ.shtml">Your Mileage Will Still Vary</a></li>
+                        <li><a href="http://www.fueleconomy.gov/feg/factors.shtml">Factors That Affect MPG</a></li>
+                    </ul>
+                </div>
+                
+                <div style="clear: both"></div>
+            </div><!-- submenu -->
+        </li><!-- About EPA Ratings -->
+    
+        <li>
+            <a href="javascript:void(0)">More...</a>
+            <div class="submenu" style="width: 57.692em; *width: 56.25em;">
+              <div class="pnlSubmenu">
+                    <h3><a href="http://www.fueleconomy.gov/feg/extremeMPG.jsp">Extreme MPG</a></h3>
+                    
+                    <div class="img-caption" style="width: 15.385em; *width: 15em; height: 14.077em; *height: 14.7em;">
+                        <a href="http://www.fueleconomy.gov/feg/extremeMPG.jsp">
+                            <img src="/feg/images/topnav/2011_VW_XL1_mm.jpg" alt="" class="img-caption">
+                        </a>
+                      <ul>
+                            <li><a href="http://www.fueleconomy.gov/feg/extremeMPG.jsp">Learn about vehicles and technologies that are pushing the fuel efficiency envelope.</a></li>
+                        </ul>
+                    </div>
+              </div>   
+                  
+                <div class="pnlSubmenu">
+                    <h3><a href="http://www.fueleconomy.gov/feg/tech_adv.shtml">Fuel-Saving Technologies</a></h3>
+                    <div class="img-caption" style="width: 15.385em; *width: 15em; height: 14.077em; *height: 14.7em;">
+                        <a href="http://www.fueleconomy.gov/feg/tech_adv.shtml">
+                            <img src="/feg/images/tech_trans_multilink.gif" alt="" class="img-caption">
+                        </a>
+                      <ul>
+                            <li><a href="http://www.fueleconomy.gov/feg/tech_engine_more.shtml">Engine Technologies</a></li>
+                            <li><a href="http://www.fueleconomy.gov/feg/tech_transmission.shtml">Transmission Technologies</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="pnlSubmenu" style="margin-right: 0;">
+                    <h3><a href="http://www.fueleconomy.gov/feg/atv.shtml">Where the Energy Goes</a></h3>
+                    <div class="img-caption" style="width: 15.385em; *width: 15em; height: 14.077em; *height: 14.7em;">
+                        <a href="http://www.fueleconomy.gov/feg/atv.shtml">
+                            <img src="/feg/images/topnav/energyloss_mm.jpg" alt="" class="img-caption">
+                        </a>
+                        <ul>
+                            <li><a href="http://www.fueleconomy.gov/feg/atv.shtml">Gasoline Vehicles</a></li>
+							<li><a href="http://www.fueleconomy.gov/feg/atv-hev.shtml">Hybrids</a></li>
+                        </ul>
+                    </div>
+                </div> 
+                
+                <div style="clear: both;"></div>
+            </div>
+        </li>
+    </ul>
+
+</div> 
+<!-- End banner and banner menu --> 
+   <div id="bd" role="main">
+		<div id="yui-main">
+			<div class="yui-b">
+        		<div class="yui-g">
+   				  <div id="main-content">
+                    
+                        <a name="content"></a><a name="top"></a>
+                        
+                        <!-- Begin AddThis social sharing toolbox -->
+                        <!-- AddThis Buttons BEGIN -->
+<div class="addthis_toolbox addthis_default_style" style="float: right; margin: .25em 0 0 1em; width: 175px">
+	<a class="addthis_button_facebook"></a>
+	<a class="addthis_button_twitter"></a>
+	<a class="addthis_button_email"></a>
+	<a class="addthis_button_print"></a>
+	<span class="addthis_separator">|</span>
+<a href="http://www.addthis.com/bookmark.php?v=300&amp;username=fueleconomy" class="addthis_button_compact">Share</a>
+</div>
+<script type="text/javascript">var addthis_config = {"data_track_addressbar":false};</script>
+<script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=fueleconomy#async=1#domready=1"></script>
+<!-- AddThis Buttons END -->
+
+<!-- initialize addthis -->
+<script type="text/javascript">
+function initAddThis() {
+	addthis.init();
+}
+
+ // After the DOM has loaded...
+$(document).ready(function() {
+    initAddThis();
+})
+</script>
+
+                        <!-- End AddThis -->
+                    
+                        <h1>FuelEconomy.gov Web Services</h1> 
+                    	
+                        
+                        <p>WADL: <a href="/ws/rest/application.wadl">/ws/rest/application.wadl</a></p>
+                        <H2>Resources</H2>
+                        	<H3>Basic Data Services</H3>
+    						<ul>
+                        		<li><a href="#vehicle">/ws/rest/vehicle/{id}</a> - Return a specific vehicle record
+                                	<ul>
+                        				<li>Example URL: <a href="/ws/rest/vehicle/31873" target="_self">/ws/rest/vehicle/31873</a></li>
+                        			</ul>
+                                </li>
+                        		<li><a href="#emissions">/ws/rest/vehicle/emissions/{id}</a> - Return a list of emission records for specific vehicle record
+                        			<ul>
+                        				<li>Example URL: <a href="/ws/rest/vehicle/emissions/31873">/ws/rest/vehicle/emissions/31873</a></li>
+                      				</ul>
+                        		</li>
+                                <li><a href="#fuelprices">/ws/rest/fuelprices</a> - Return the current fuel prices
+                                	<ul>
+                        				<li>Example URL: <a href="/ws/rest/fuelprices">/ws/rest/fuelprices</a></li>
+                      				</ul>
+                        		</li>
+                                <li><a href="#ympgVehicle">/ws/rest/ympg/shared/ympgVehicle/{id}</a> - Return a summary of shared user MPG data for a specific vehicle ID
+                                	<ul>
+                        				<li>Example URL: <a href="/ws/rest/ympg/shared/ympgVehicle/26425">/ws/rest/ympg/shared/ympgVehicle/26425</a>
+               				  		</ul>
+                        		</li>
+                                <li><a href="#ympgDriverVehicle">/ws/rest/ympg/shared/ympgDriverVehicle/{id}</a> - Return a list of user MPG records for a specific vehicle ID
+                                	<ul>
+                        				<li>Example URL: <a href="/ws/rest/ympg/shared/ympgDriverVehicle/26425">/ws/rest/ympg/shared/ympgDriverVehicle/26425</a>
+               				  		</ul>
+                                </li>
+                                </ul>
+                <H3>Download the vehicle data</H3>
+                        <p>The Find a Car vehicle table contains fuel economy information for 1984-current model year vehicles.  The data are available for download in CSV and XML formats:</p>                       
+						<ul>
+							<li>Vehicle
+								<ul>
+									<li><a href="/feg/epadata/vehicles.csv.zip">CSV</a></li>
+									<li><a href="/feg/epadata/vehicles.xml.zip">XML</a></li>
+								</ul>
+							</li>
+							<li>Emissions - linked to Vehicle by vehicle ID
+								<ul>
+									<li><a href="/feg/epadata/emissions.csv.zip">CSV</a></li>
+									<li><a href="/feg/epadata/emissions.xml.zip">XML</a></li>
+								</ul>
+							</li>
+                            <li><a href="http://www.epa.gov/fueleconomy/updates.htm">EPA Revises MPG Estimates for 2013-2014 Ford Vehicles</a></li>
+                            <li><a href="http://epa.gov/fueleconomy/labelchange.htm">2011-2013 Hyundai and Kia data revised</a></li>
+                            <li>Updated: Tuesday August 12 2014</li>
+                            <li>Additional data are available for download at: <a href="/feg/download.shtml">/feg/download.shtml</a></li>
+                      	</ul>
+
+				<H3> Find a Car Menus</H3>
+							<p>The resources at /ws/rest/vehicle/menu/* are used to select a vehicle using a series of four menus: year, make, model, and options.  A menu consists of a list of menu items, each with two properties: text and value.</p>
+                     		<ul>
+                               	<li>/ws/rest/vehicle/menu/year - Returns a list of model years
+                        			<ul>
+                        				<li>Example URL: <a href="/ws/rest/vehicle/menu/year">/ws/rest/vehicle/menu/year</a></li>
+                      				</ul>
+                        		</li>
+                                <li>/ws/rest/vehicle/menu/make?year=yyyy - Return a list of makes for a particular year 
+                        			<ul>
+                        				<li>Example URL: <a href="/ws/rest/vehicle/menu/make?year=2012">/ws/rest/vehicle/menu/make?year=2012</a></li>
+                      				</ul>
+                        		</li>
+                                <li>/ws/rest/vehicle/menu/model?year=yyyy&amp;make=mmmm - Return a list of models for a particular year and make
+                        			<ul>
+                        				<li>Example URL: <a href="/ws/rest/vehicle/menu/model?year=2012&amp;make=Honda">/ws/rest/vehicle/menu/model?year=2012&amp;make=Honda</a></li>
+                      				</ul>
+                        		</li>
+                                <li>ws/rest/vehicle/menu/options?year=2012&amp;make=mmmm&amp;model=nnnn - Return a list of model options and the associated vehicle ID for a particular year, make and model
+                        			<ul>
+                        				<li>Example URL: <a href="/ws/rest/vehicle/menu/options?year=2012&amp;make=Honda&amp;model=Fit">ws/rest/vehicle/menu/options?year=2012&amp;make=Honda&amp;model=Fit</a></li>
+                      				</ul>
+                        		</li>
+                        				
+               				</ul>
+                          
+ 					<H3>My MPG Shared Data</H3>
+ 					<p>This resource provides access to <a href="/mpg/">My MPG</a> shared data via vehicle make and model:</p>
+					<ul>
+						<li>Menu of shared make <a href="/ws/rest/ympg/shared/menu/make">/ws/rest/ympg/shared/menu/make</a></li>
+						<li>Menu of shared models for the specified make; for example <a href="/ws/rest/ympg/shared/menu/model?make=Honda">/ws/rest/ympg/shared/menu/model?make=Honda</a></li>
+						<li>List of vehicles with shared My MPG data; for example <a href="/ws/rest/ympg/shared/vehicles?make=Honda&amp;model=Fit">/ws/rest/ympg/shared/vehicles?make=Honda&amp;model=Fit</a></li>
+					</ul>
+
+ <H2>Data Description</H2>
+
+				<H3> <a name="vehicle"></a>vehicle </H3>
+							<ul>
+								<li> <a href="wsData.shtml#atvtype">atvtype</a> - type of alternative fuel or advanced technology vehicle </li>
+								<li>barrels08 - annual petroleum consumption in barrels for <a href="#fuelType1">fuelType1</a> <a href="#ft1">(1)</a></li> 
+								<li>barrelsA08 - annual petroleum consumption in barrels for <a href="#fuelType2">fuelType2</a> <a href="#ft1">(1)</a></li>
+								<li>charge120 - time to charge an electric vehicle in hours at 120 V</li>
+								<li>charge240 - time to charge an electric vehicle in hours at 240 V</li>
+								<li>city08 - city MPG for <a href="#fuelType1">fuelType1</a> <a href="#ft2">(2)</a></li>
+								<li>city08U - unrounded city MPG for <a href="#fuelType1">fuelType1</a> <a href="#ft2">(2)</a>, <a href="#ft3">(3)</a></li>
+								<li>cityA08 - city MPG for <a href="#fuelType2">fuelType2</a > <a href="#ft2">(2)</a></li>
+								<li>cityA08U - unrounded city MPG for <a href="#fuelType2">fuelType2</a > <a href="#ft2">(2)</a>, <a href="#ft3">(3)</a></li>
+								<li>cityCD - city gasoline consumption (gallons/100 miles) in charge depleting mode <a href="#ft4">(4)</a></li>
+								<li>cityE - city electricity consumption in kw-hrs/100 miles</li>  
+								<li>cityUF - EPA city utility factor (share of electricity) for PHEV</li>
+								<li>co2 - tailpipe CO2 in grams/mile for <a href="#fuelType1">fuelType1</a> <a href="#ft5">(5)</a></li>
+								<li>co2A - tailpipe CO2 in grams/mile for <a href="#fuelType2">fuelType2</a  ><a href="#ft5"> (5)</a></li>
+                                <li>co2TailpipeAGpm - tailpipe CO2 in grams/mile for <a href="#fuelType2">fuelType2</a> <a href="#ft5">(5)</a></li>
+								<li>co2TailpipeGpm- tailpipe CO2 in grams/mile for <a href="#fuelType1">fuelType1</a>  <a href="#ft5"> (5)</a></li>
+								<li>comb08 - combined MPG for <a href="#fuelType1">fuelType1</a> <a href="#ft2">(2)</a></li>
+								<li>comb08U - unrounded combined MPG for <a href="#fuelType1">fuelType1</a> <a href="#ft2">(2)</a>, <a href="#ft3">(3)</a></li>
+								<li>combA08 - combined MPG for <a href="#fuelType2">fuelType2</a > <a href="#ft2">(2)</a></li>
+								<li>combA08U - unrounded combined MPG for <a href="#fuelType2">fuelType2</a> <a href="#ft2">(2)</a>, <a href="#ft3"> (3)</a></li>
+								<li>combE - combined electricity consumption in kw-hrs/100 miles</li>
+								<li>combinedCD - combined gasoline consumption (gallons/100 miles) in charge depleting mode <a href="#ft4">(4)</a></li>
+								<li>combinedUF - EPA combined utility factor (share of electricity) for PHEV</li>
+								<li>cylinders - engine cylinders</li>
+								<li>displ - engine displacement in liters</li>
+								<li><a href="wsData.shtml#drive">drive</a> - drive axle type</li>
+								<li><a href="#emissions">emissionsList</a></li>
+								<li>engId - EPA model type index </li> 
+								<li>eng_dscr - engine descriptor; see http://www.fueleconomy.gov/feg/findacarhelp.shtml#engine</li>
+								<li>evMotor - electric motor (kw-hrs)</li>
+								<li>feScore - EPA Fuel Economy Score (-1 = Not available)</li>
+								<li>fuelCost08 - annual fuel cost for <a href="#fuelType1">fuelType1</a> ($) <a href="#ft7">(7)</a></li>
+								<li>fuelCostA08 - annual fuel cost for <a href="#fuelType2">fuelType2</a> ($) <a href="#ft7">(7)</a></li>
+								<li>fuelType - fuel type with <a href="#fuelType1">fuelType1</a> and <a href="#fuelType2">fuelType2</a> (if applicable)</li>
+                               	<li><a name="fuelType1"></a>fuelType1 - fuel type 1.  For single fuel vehicles, this will be the only fuel.  For dual fuel vehicles, this will be the conventional fuel.</li>
+                                <li><a name="fuelType2"></a>fuelType2 - fuel type 2. For dual fuel vehicles, this will be the alternative fuel (e.g. E85, Electricity, CNG, LPG).  For single fuel vehicles, this field is not used</li>
+								<li>ghgScore - EPA GHG score (-1 = Not available)</li>
+								<li>ghgScoreA - EPA GHG score for dual fuel vehicle running on the alternative fuel (-1 = Not available)</li>
+								<li>guzzler- if G or T, this vehicle is subject to the gas guzzler tax				
+								<li>highway08 - highway MPG for <a href="#fuelType1">fuelType1</a> <a href="#ft2">(2)</a></li>
+								<li>highway08U - unrounded highway MPG for <a href="#fuelType1">fuelType1</a> <a href="#ft2">(2)</a>, <a href="#ft3">(3)</a></li>
+								<li>highwayA08 - highway MPG for <a href="#fuelType2">fuelType2</a> <a href="#ft2">(2)</a></li>
+								<li>highwayA08U - unrounded highway MPG for <a href="#fuelType2">fuelType2</a> <a href="#ft2">(2)</a>,<a href="#ft3">(3)</a></li>
+								<li>highwayCD - highway gasoline consumption (gallons/100miles) in charge depleting mode <a href="#ft4">(4)</a> </li>
+								<li>highwayE - highway electricity consumption in kw-hrs/100 miles </li>
+								<li>highwayUF - EPA highway utility factor (share of electricity) for PHEV</li>
+								<li>hlv - hatchback luggage volume (cubic feet) <a href="#ft8">(8)</a></li>
+								<li>hpv - hatchback passenger volume (cubic feet) <a href="#ft8">(8)</a></li>
+								<li>id - vehicle record id</li>
+								<li>lv2 - 2 door luggage volume (cubic feet) <a href="#ft8">(8)</a></li>
+								<li>lv4 - 4 door luggage volume (cubic feet) <a href="#ft8">(8)</a></li>
+								<li>make - manufacturer (division)</li>
+								<li>mfrCode - 3-character manufacturer code</li>
+								<li>model - model name (carline)</li>
+								<li>mpgData - has My MPG data; see <a href="#ympgVehicle">yourMpgVehicle</a> and <a href="#ympgDriverVehicle">yourMpgDriverVehicle</a></li>
+                                <li>phevBlended - if true, this vehicle operates on a blend of gasoline and electricity in charge depleting mode</li>
+								<li>pv2 - 2-door passenger volume (cubic feet) <a href="#ft8">(8)</a></li>
+								<li>pv4 - 4-door passenger volume (cubic feet) <a href="#ft8">(8)</a></li>
+								<li><a name="rangeA"></a>rangeA - EPA range for <a href="#fuelType2">fuelType2</a></li> 
+								<li>rangeCityA - EPA city range for <a href="#fuelType2">fuelType2</a></li> 
+								<li>rangeHwyA - EPA highway range for <a href="#fuelType2">fuelType2</a></li>
+								<li>trans_dscr - transmission descriptor; see http://www.fueleconomy.gov/feg/findacarhelp.shtml#trany</li>
+								<li>trany - transmission</li>
+								<li>UCity - unadjusted city MPG for <a href="#fuelType1">fuelType1</a>; see the description of the <a href="/feg/fe_test_schedules.shtml">EPA test procedures</a></li>
+								<li>UCityA - unadjusted city MPG for <a href="#fuelType2">fuelType2</a>; see the description of the <a href="/feg/fe_test_schedules.shtml">EPA test procedures</a></li>
+								<li>UHighway - unadjusted highway MPG for <a href="#fuelType1">fuelType1</a>; see the description of the <a href="/feg/fe_test_schedules.shtml">EPA test procedures</a></li>
+								<li>UHighwayA - unadjusted highway MPG for <a href="#fuelType2">fuelType2</a>; see the description of the <a href="/feg/fe_test_schedules.shtml">EPA test procedures</a></li>
+								<li>VClass - <a href="wsData.shtml#VClass">EPA vehicle size class</a></li>
+								<li>year - model year</li>
+								<li>youSaveSpend - you save/spend over 5 years compared to an average car ($). Savings are positive; a greater amount spent yields a negative number. For dual fuel vehicles, this is the cost savings for gasoline.</li>
+								<li>sCharger - if S, this vehicle is supercharged</li> 
+								<li>tCharger - if T, this vehicle is turbocharged</li>
+							</ul>
+						<H3><a name="emissions"></a>emissions</H3>
+							<ul>
+						<li>emissionsList
+							<ul>
+								<li>emissionsInfo - 
+									<ul>
+										<li>efid - engine family ID</li>
+										<li>id - vehicle record ID (links emission data to the vehicle record)</li>
+										<li><a href="wsData.shtml#salesArea">salesArea</a> - EPA sales area code </li>
+										<li>score - EPA 1-10 smog rating for <a href="#fuelType1">fuelType1</a></li>
+										<li>scoreAlt - EPA 1-10 smog rating for <a href="#fuelType2">fuelType2</a></li>
+										<li><a href="wsData.shtml#smartwayScore">smartwayScore</a> - SmartWay Code</li>
+										<li><a href="wsData.shtml#standard">standard</a> -  Vehicle Emission Standard Code </li>
+										<li><a href="wsData.shtml#standard">stdText</a> - Vehicle Emission Standard </li>
+									</ul>
+								</li>
+							</ul>
+						</li>
+						</ul>
+
+					<H3><a name="fuelPrices"></a>fuel prices</H3>
+						<ul>
+							<li>fuelPrices
+								<ul>
+                                	<li>midgrade - $ per gallon of midgrade gasoline<a href="#ft9">(9)</a></li>
+									<li>premium - $ per gallon of premium gasoline<a href="#ft9">(9)</a></li>
+									<li>regular - $ per gallon of regular gasoline<a href="#ft9">(9)</a></li>
+									<li>cng - $ per gallon of gasoline equivalent (GGE) of compressed natural gas<a href="#ft10">(10)</a></li>
+									<li>diesel - $ per gallon of diesel<a href="#ft9">(9)</a></li>
+									<li>e85 - $ per gallon of E85<a href="#ft10">(10)</a></li>
+									<li>electric - $ per kw-hr of electricity<a href="#ft10">(10)</a></li>
+									<li>lpg - $ per gallon of propane<a href="#ft10">(10)</a></li>
+								</ul>
+							</li>
+						</ul>
+				<H3><a name="ympgVehicle"></a>yourMpgVehicle - summary of all My MPG data for this vehicle</H3>
+				  <ul>
+						<li>avgMpg - harmonic mean of average MPG shared by fueleconomy.gov users</li>
+						<li>cityPercent - average % city miles</li>
+						<li>highwayPercent - average % highway miles</li>
+						<li>maxMpg - maximum user average MPG</li>
+						<li>minMpg - minimum user average MPG</li>
+						<li>recordCount - number of records for this vehicle</li>
+						<li>vehicleId - vehicle record id (links My MPG data to the vehicle record)</li>
+					</ul>
+				<H3><a name="ympgDriverVehicle"></a>yourMpgDriverVehicle - summary of driver data reported for this vehicle</H3>
+					<ul>
+						<li>cityPercent - user average % city miles</li>
+						<li>highwayPercent - user average % highway miles</li>
+						<li>lastDate - date records were last updated (yyyy-mm-dd)</li>
+						<li>mpg - average MPG</li>
+						<li>state - state of residence</li>
+                    	<li>vehicleId - vehicle record ID (links My MPG data to the vehicle record)</li>
+					</ul>
+                
+				<H3>Footnotes: </H3>
+					<p><a name="ft1"></a>(1) 1 barrel = 42 gallons. Petroleum consumption is estimated using the Department of Energy's GREET model and includes petroleum consumed from production and refining to distribution and final use.  Vehicle manufacture is excluded. </p>
+					<p><a name="ft2"></a>(2) EPA revised how MPG is calculated for 2008 and later model year vehicles.  MPG estimates for 1985-2007 model year vehicles have been updated to make them comparable to the estimates for 2008 and later vehicles.  These are not the original EPA MPG estimates for these vehicles. For electric and CNG vehicles this number is MPGe (gasoline equivalent miles per gallon).</p>
+					<p><a name="ft3"></a>(3) Unrounded MPG values are not available for some vehicles.</p>
+					<p><a name="ft4"></a>(4) This field is only used for blended PHEV vehicles.</p>
+					<p><a name="ft5"></a>(5) For model year 2013 and beyond, tailpipe CO2 is based on EPA tests.  For previous model years, CO2 is estimated using an EPA emission factor. -1 = Not Available.</p>
+					<p><a name="ft6"></a>(6) For PHEVs this is the charge depleting range.</p>
+                    <p><a name="ft7"></a>(7) Annual fuel cost is based on 15,000 miles, 55% city driving, and the price of fuel used by the vehicle.</p>
+					<p><a name="ft8"></a>(8) Interior volume dimensions are not required for two-seater passenger cars or any vehicle classified as truck which includes vans, pickups, special purpose vehicles, minivan and sport
+utility vehicles.</p>
+					<p><a name="ft9"></a>(9) Fuel prices for gasoline and diesel fuel are from the Energy Information Administration and are updated weekly.</p>
+					<p><a name="ft10"></a>(10) Fuel prices for E85, LPG, and CNG are from the Office of Energy Efficiency and Renewable Energy's Alternative Fuel Price Report and are updated quarterly.</p>
+   				  </div>
+                    <!-- End of "main-content" container -->
+                </div>
+                <!-- End of class "yui-b" container -->
+            </div>
+            <!-- End of class "yui-g" container -->
+        </div>
+        <!-- End of "yui-main" container -->
+
+	</div>
+    <!-- End of "bd" container -->
+     <div id="ft" role="contentinfo">
+					<a href="/m/" >Mobile</a>
+                  | <a href="/feg/download.shtml" >Download Data</a> 
+                  | <a href="/feg/bymake/bymanuNF.shtml" >Find and Compare Cars</a>
+                  | <a href="http://www.usa.gov" >USA.gov</a>
+                  | <a href="/feg/dealers.shtml" >Info for Auto Dealers</a>
+                  | <a href="/feg/ORNL-disclaimer.htm" >Privacy/Security</a>
+  | <a href="mailto:fueleconomy@ornl.gov" >Feedback</a><p>This site last modified Thursday August 14 2014</p></div>
+
+</div>
+<!-- End of "doc4" container -->
+
+
+</body>
+</html>
+

@@ -1,0 +1,23 @@
+"","Make","Model","Type","Class","Year","MPGe.City","MPGe.Hwy","MPGe.Combined","MPG.City.Gas","MPG.Hwy.Gas","MPG.Combined.Gas","Range.City","Range.Hwy","Range","Kwh.100mi.City","Kwh.100mi.Hwy","Kwh.100mi.Combined","cityCD","highwayCD","combinedCD","Charge120","Charge240","Fuel.Cost.Electric","Fuel.Cost.Gas","cityUF","highwayUF","combinedUF","Cargo","Passenger","phevBlended","EV.Motor","Savings.5Yr","MSRP"
+"25895","Honda","Accord Plug-in","Plug-in Hybrid","Midsize Cars",2014,124,105,115,47,46,46,14,12,"13",27,32,29,0,0,0,0,0.67,1150,0,0.34,0.31,0.33,9,103,"true","124 kW",6750,40570
+"25987","Chevrolet","Spark EV","EV","Subcompact Cars",2014,128,109,119,0,0,0,88,75,"82",26,31,28,0,0,0,0,7,500,0,0,0,0,11,86,"false","104 kW AC Induction",9000,26685
+"26274","Chevrolet","Volt","Plug-in Hybrid","Compact Cars",2014,101,93,98,35,40,37,40,36,"38",33,36,35,0,0,0,0,4,650,1550,0.68,0.65,0.66,18,90,"false","111 kW",6750,34170
+"26279","Honda","Fit EV","EV","Small Station Wagons",2014,132,105,118,0,0,0,90,74,"82",26,32,29,0,0,0,0,4,500,0,0,0,0,21,91,"false","92 kW DCPM",9000,36625
+"26483","Ford","Fusion Energi","Plug-in Hybrid","Midsize Cars",2014,95,81,88,40,36,38,21,17,"20",34,42,37,0,0,0,0,2.5,1400,0,0.4781,0.4144,0.4506,8,103,"true","68 kW",6250,34700
+"26529","Ford","Focus EV","EV","Compact Cars",2014,110,99,105,0,0,0,80,72,"76",31,34,32,0,0,0,0,3.6,600,0,0,0,0,13,90,"false","107 kW AC PMSM",8500,35170
+"26809","Fiat","500e","EV","Minicompact Cars",2014,122,108,116,0,0,0,92,81,"87",28,31,29,0,0,0,0,4,500,0,0,0,0,7,72,"false","82 kW ACIPM",9000,31800
+"26810","smart","ForTwo EV Convertible","EV","Two Seaters",2014,122,93,107,0,0,0,76,59,"68",28,36,32,0,0,0,0,6,600,0,0,0,0,0,0,"false","55 kW DCPM",8500,28000
+"26811","smart","ForTwo EV Coupe","EV","Two Seaters",2014,122,93,107,0,0,0,76,59,"68",28,36,32,0,0,0,0,6,600,0,0,0,0,0,0,"false","55 kW DCPM",8500,25000
+"26846","Toyota","RAV4 EV","EV","Small Sport Utility Vehicle 2WD",2014,78,74,76,0,0,0,107,99,"103",43,46,44,0,0,0,0,6,800,0,0,0,0,0,0,"false","115 kW AC Induction",7500,49800
+"26947","Toyota","Prius Plug-in","Plug-in Hybrid","Midsize Cars",2014,90,102,95,51,49,50,12,9,"11",26,33,29,0.35,0,0.1907,0,1.5,1050,0,0.32,0.25,0.29,22,94,"true","18 kW",6750,29990
+"27108","Ford","C-MAX Energi","Plug-in Hybrid","Midsize Cars",2014,95,81,88,40,36,38,21,17,"20",34,42,37,0,0,0,0,2.5,1400,0,0.4781,0.4144,0.4506,19,100,"true","68 kW",6250,31635
+"27145","Nissan","Leaf","EV","Midsize Cars",2014,126,101,114,0,0,0,92,74,"84",27,33,30,0,0,0,0,8,550,0,0,0,0,24,92,"false","80 kW DCPM",8750,29010
+"27224","Cadillac","ELR","Plug-in Hybrid","Subcompact Cars",2014,85,80,82,31,35,33,38,35,"37",39,42,41,0,0,0,0,5,750,1750,0.67,0.64,0.65,11,83,"false","126 kW",6000,75000
+"27229","Tesla","Model S (85 Kwh)","EV","Large Cars",2014,88,90,89,0,0,0,263,267,"265",38,37,38,0,0,0,0,12,700,0,0,0,0,26,94,"false","270 kW AC Induction",8000,93400
+"27230","Tesla","Model S (60 kwh)","EV","Large Cars",2014,94,97,95,0,0,0,206,211,"208",36,35,35,0,0,0,0,10,650,0,0,0,0,26,94,"false","225 kW AC Induction",8250,69900
+"27244","Porsche","Panamera S E-Hybrid","Plug-in Hybrid","Large Cars",2014,42,66,50,23,29,25,16,16,"16",53,51,52,0.87,0.03,0.5,0,3,2300,0,0.39,0.38,0.39,16,108,"true","70 kW",2250,107605
+"27322","BYD","e6","EV","Small Sport Utility Vehicle 2WD",2014,61,65,63,0,0,0,121,134,"127",55,52,54,0,0,0,0,6,950,0,0,0,0,0,0,"false","75 kW AC PMSM",6750,NA
+"27370","Mitsubishi","i-MiEV","EV","Subcompact Cars",2014,126,99,112,0,0,0,69,55,"62",27,34,30,0,0,0,0,7,550,0,0,0,0,13,85,"false","49 kW DCPM",8750,22995
+"27710","BMW","i3 BEV","EV","Subcompact Cars",2014,137,111,124,0,0,0,89,72,"81",25,30,27,0,0,0,0,4,500,0,0,0,0,15,84,"false","125 kW ACIPM",9000,41350
+"27754","Mercedes-Benz","B-Class","EV","Midsize Cars",2014,85,83,84,0,0,0,88,86,"87",40,41,40,0,0,0,0,3.5,700,0,0,0,0,22,90,"false","132 kW AC Induction",8000,42375
+"27789","BMW","i3 REX","Plug-in Hybrid","Subcompact Cars",2014,127,107,117,41,37,39,78,66,"72",27,32,29,0,0,0,0,4,500,1500,0.849,0.813,0.834,15,84,"false","125kW",8000,45200
