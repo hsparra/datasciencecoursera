@@ -56,7 +56,10 @@ shinyServer(
           maxY <- max(out$Cost) + 5
       ggplot(out, aes(x=Model, y=Cost, fill=Model)) + geom_bar(stat="identity") + 
         geom_text(aes(label=dispCost), vjust=1.5, colour="white") +
-        ggtitle("Weekly Fuel Cost") + ylim(0,maxY)
+        geom_text(aes(label=Model), vjust=3, colour="white") +
+        ggtitle("Weekly Fuel Cost") + ylim(0,maxY) +  
+        ylab("US Dollars") +
+        theme(axis.text.x=element_text(size=12))
     })
   
 })
