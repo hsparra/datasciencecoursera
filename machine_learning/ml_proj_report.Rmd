@@ -1,38 +1,127 @@
 ---
-title: "ml_proj_report"
+title: "Weight Lifting Exercise Quality Prediction"
 output: html_document
 ---
-# Summary
+## Synopsis
+In recent years human activity research as moved from predicting what activity an individual is performing to trying to predict how well an individual is performing an activity. In [Qualitative Activity Recognition of Weight Lifting Exercises](http://groupware.les.inf.puc-rio.br/work.jsf?p1=11201) Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013, Velloso, Bulling, Gellersen, Ugulino, and Fuks explored predicting how well participants performed a specific set of dumbbell exercises. Individuals were asked to perform barbell lifts correctly and incorrectly in 5 different ways and data was captured while they performed the lists.
 
-# Prep
-Split into training and test datasets
+This report documents processing data from this research to predict which way an individual was performing an exercise. Data from this was obtained from the [Human Activities Recognition (HAR) project](http://groupware.les.inf.puc-rio.br/har). 
 
+From the training data a variables were identified and a model was built to predict which way an exercise was performed. Usng the test data, the model correctly predicted which method was being used in the exercise in 20 out of 20 of the test cases. This indicates that it is possible with the appropriate instrumentation to identify if an individual is performing a specific set of dumbbell exercises correctly, and if not, identify the most common mistakes.
 
-## Exploratory
-### create boxplots
+#### Quick Model Summary
+The final model was created using the `caret` package and a `random forest` model. Default values were used which resulted in the `bootstrap resampling` being used for the `cross validation`. The expected out of sample error of the model is `0.6%` and the expected accuracy is `.993`. 
 
-### Look for excessive NAs
+## Loading and Processing the Data
+Training data was obtained at [https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv), and the testing data was obtained from [https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv).
 
-### Variables that are highly correlated with each other
+### Reading the data
+First we read in the downloaded data. Prior to processing the downloaded data files were saved in a .zip archive to conserve space.
+```{r, cache=TRUE}
+library(caret)
+## Comment out if not able to do multicore processing
+library(doMC)
+registerDoMC(2)
 
-### Train model
-
-#### Discussion of model output
-Accuracy 99%
-Cross-validation - use default bootstrap with 25 repetitions
-Number of Trees: 500
-OOB estimate of error: ~0.6%
-
-```
-> dim(train)
-[1] 13737    28
-
-> dim(test)
-[1] 5885   20
+data <- read.csv(unz("data/pml-data.zip","pml-training.csv"),stringsAsFactors=F)
+test.final <- read.csv(unz("data/pml-data.zip","pml-testing.csv"),stringsAsFactors=F)
 ```
 
+Once loaded we check the dimensions of the data.
+```{r}
+dim(data)
+dim(test.final)
+```
 
-The Final Model
+As can be seen, both the training data and the test data have 160 variables. The variable specifying the method used in the dumbell is the `classe` variable, which is the 160th variable.
+```{r}
+data[1, 159:160]
+```
+
+Further observation of the variables showed that the first seven variables were associated with user and time and so they were removed since the goal was to predict based on the sensor readings.
+```{r}
+data[1:2, 1:7]
+data <- data[, -c(1:7)]
+```
+
+### Split Training Dataset
+Next, the full training dataset was split into a training dataset and a test data set to use for validating the model. Seventy percent of the data was used for the training data. This would give more accuracy than a 60/40 split but with higher variability.
+```{r}
+library(caret)
+inTrain <- createDataPartition(y=data$classe, p=0.7, list=FALSE)
+train <- data[inTrain,]
+test <- data[-inTrain,]
+```
+
+
+### Select Variables for Model
+Next, near zero covariates were identified and removed.
+```{r, cache=TRUE}
+nsv <- nearZeroVar(train)
+train <- train[,-nsv]
+```
+
+Further observation of data showed that some variables had excessive number of NAs (> 95%). These were identified and removed. The function used to identify the NAs can be found in the Appendix.
+```{r, echo=FALSE, cache=TRUE}
+naCheck <- function (df, check) {
+  y <- character()
+  z <- numeric()
+  x <- numeric()
+  for (i in 1:length(names(df))) {
+    w <- sum(is.na(df[,i]))/length(df[,i])
+    if (w > check) {
+      x <- append(x, i)
+      y <- append(y,names(df)[i])
+      z <- append(z,w)
+    }
+  }
+  data.frame(colNum=x, colName=y, percent=z, stringsAsFactors=FALSE)
+}
+```
+```{r}
+lotsNas <- naCheck(train, .95)
+train <- train[,-lotsNas$colNum]
+```
+
+Next, integer columns were removed. They could have been converted but intial analysis with a subset of the training data indicated that they did not material add to the model. The function to identify the variables can be found in the Appendix.
+```{r, echo=FALSE, cache=TRUE}
+colsOfType <- function (df, type) {
+  x <- integer()
+  for (i in 1:length(df)) {
+    if (class(df[,i]) == type)
+      x <- append(x, i)
+  }
+  x
+}
+```
+
+```{r}
+colsToRemove <- colsOfType(train, "integer")
+train <- train[,-colsToRemove]
+```
+
+Finally, variables that were highly correlated with each other were removed. The `classe` variable was excluded in the correlation search since that is the variable we are interested in and variables highly correlated with the `classe` variable could indicate possible good predictors.
+```{r}
+m <- abs(cor(train[,-28]))
+diag(m) <- 0
+rowsLittleCor <- row.names(m)[m[,dim(m)[2]] > .8]
+train <- train[,!(colnames(train) %in% rowsLittleCor[-length(rowsLittleCor)])]
+```
+
+As a final step we converted the `classe` variable to a factor.
+```{r}
+train$classe <- as.factor(train$classe)
+```
+
+
+## Creating the Model
+Intial model exploration was done using a random 2000 observations from the training dataset (70%) derived when splitting the full training dataset. This small subset was used due to the excessive processing required to use the full dataset on the available hardware. Using only 2000 observations still took between fifteen and twenty minutes per run. By reducing processing time we were able to more quickly iterate through different models and experiment before moving to tuning the final model. This exploration lead to the selection of using the random forest algorigthm to create the prediction model. Once this selection was made the 70% training dataset was processed as above and fed as input into the randeom forest algorithm.
+```{r, eval=FALSE}
+modFit <- train(classe ~ ., data=train, method="rf", prox=TRUE)
+```
+
+### Model Analysis
+The defaults in the `caret` package were used with meant bootstrap resampling with 25 repetitions was used and 500 trees. In the `caret` package when using the `train()` function with a `random forest` model, cross validation occurs as part of the random forest algorithm. The resulting model is below.
 ```{r, eval=FALSE}
 modFit
 ```
@@ -58,7 +147,8 @@ Resampling results across tuning parameters:
 Accuracy was used to select the optimal model using  the largest value.
 The final value used for the model was mtry = 2. 
 ```
-
+### Expected Out of Sample Error
+As can be seen from the final model, the expected out of sample error is `0.6%`.
 ```{r, eval=FALSE}
 modFit$finalModel
 ```
@@ -80,11 +170,23 @@ E    0    0    1    5 2519 0.0023762376
 ```
 
 
+## Model Testing
+The reserved test dataaset from the segmentation of the original full training dataset was then used to test the resulting model. The columns removed from the training dataset were also removed from the test dataset.
+```{r, echo=FALSE}
+test <- test[,-nsv]
+test <- test[,-lotsNas$colNum]
+test <- test[,-colsToRemove]
+test$classe <- as.factor(test$classe)
+```
 
-Confusinon matrix
+Then the test data was used to predict using the model and the confusion matrix was observed.
+```{r, eval=FALSE}
+pred <- predict(modFit, test);
+```
 ```{r, eval=FALSE}
 confusionMatrix(pred, test$classe)
 ```
+
 ```
 Confusion Matrix and Statistics
 
@@ -119,7 +221,10 @@ Detection Prevalence   0.2853   0.1925   0.1754   0.1636   0.1832
 Balanced Accuracy      0.9986   0.9952   0.9929   0.9920   0.9976
 ```
 
+An accuracy of `0.993` and a kappa of `0.9912` were achieved.
+
 ### Most important variables
+The 20 most important variables in the model are:
 ```{r, eval=FALSE}
 varImp(modFit)
 ```
@@ -149,4 +254,39 @@ pitch_arm           13.63
 gyros_arm_y         11.72
 gyros_dumbbell_x    11.17
 gyros_arm_x         10.92
+```
+
+## Conclusion
+It appears that it is possible to construct a predictive model that utilizes sensor input to predict the quality of the exercise performed on a given set of dumbbell exercises. This indicates that this approach might be feasible for a wider range of exercises.
+
+
+
+# Apppendix
+### Function to identify excessive NAs.
+```
+naCheck <- function (df, check) {
+  y <- character()
+  z <- numeric()
+  x <- numeric()
+  for (i in 1:length(names(df))) {
+    w <- sum(is.na(df[,i]))/length(df[,i])
+    if (w > check) {
+      x <- append(x, i)
+      y <- append(y,names(df)[i])
+      z <- append(z,w)
+    }
+  }
+  data.frame(colNum=x, colName=y, percent=z, stringsAsFactors=FALSE)
+}
+```
+### Function to remove variables
+```
+colsOfType <- function (df, type) {
+  x <- integer()
+  for (i in 1:length(df)) {
+    if (class(df[,i]) == type)
+      x <- append(x, i)
+  }
+  x
+}
 ```

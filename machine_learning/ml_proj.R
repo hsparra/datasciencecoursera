@@ -1,5 +1,4 @@
 library(caret)
-library(psych)
 
 # if doing multi-core
 library(doMC)
