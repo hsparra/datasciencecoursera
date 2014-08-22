@@ -16,16 +16,7 @@ shinyServer(
 #       else
 #         data2[data2$year %in% c("2009","2010","2011","2012","2013","2014"),]
 #     })
-# 
-#     output$plot1 <- renderPlot({
-#       
-#       p <- ggplot(selectedData(), aes_string(x=input$x, y=input$y)) + 
-#         geom_point(aes_string(size=3, color=input$color)) 
-# #       + geom_text(aes(vjust=-2, label=model)) 
-#        if (input$names == TRUE)
-#          p <- p + geom_text(aes(vjust=-2, label=model)) 
-#       p #print(p)
-#     })
+
     
     observe({
       models <- epa[epa$Make==input$makeSel,"Model"]
@@ -42,20 +33,30 @@ shinyServer(
     output$plot1 <- renderPlot({
       mods <- character()
       costs <- numeric()
+      dailyCommute <-  as.integer(input$daily_com)
       if (input$modelSel > ""){
         mods <- c(input$modelSel)
         epa_data <- epa[epa$Model == input$modelSel,]
-        costs <- c(compCost(epa_data, as.integer(input$daily_com)))
+        costs <- c(compCost(epa_data, dailyCommute, input$el_price, input$gas_price) * 5)
       }
       if (input$modelSel2 > "") {
         mods <- c(mods, input$modelSel2)
         epa_data <- epa[epa$Model == input$modelSel2,]
-        costs <- c(costs, Cost=compCost(epa_data, as.integer(input$daily_com)))
+        costs <- c(costs, Cost=compCost(epa_data, dailyCommute) * 5)
       }
       
+      mods <- c(mods,"Average Car")
+      costs <- c(costs, dailyCommute / 23 * 5 * input$gas_price)
+      
       out <- data.frame(Model=mods, Cost=costs)
+      out$dispCost <- sprintf("$%3.2f",costs)
+      if (max(out$Cost) < 40)
+          maxY <- 40
+      else
+          maxY <- max(out$Cost) + 5
       ggplot(out, aes(x=Model, y=Cost, fill=Model)) + geom_bar(stat="identity") + 
-        geom_text(aes(label=sprintf("$ %3.2f",Cost), vjust=-0.2))
+        geom_text(aes(label=dispCost), vjust=1.5, colour="white") +
+        ggtitle("Weekly Fuel Cost") + ylim(0,maxY)
     })
   
 })
