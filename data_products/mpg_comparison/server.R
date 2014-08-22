@@ -37,12 +37,12 @@ shinyServer(
       if (input$modelSel > ""){
         mods <- c(input$modelSel)
         epa_data <- epa[epa$Model == input$modelSel,]
-        costs <- c(compCost(epa_data, dailyCommute, input$el_price, input$gas_price) * 5)
+        costs <- c(compDailyCost(epa_data, dailyCommute, input$el_price, input$gas_price) * 5)
       }
       if (input$modelSel2 > "") {
         mods <- c(mods, input$modelSel2)
         epa_data <- epa[epa$Model == input$modelSel2,]
-        costs <- c(costs, Cost=compCost(epa_data, dailyCommute) * 5)
+        costs <- c(costs, Cost=compDailyCost(epa_data, dailyCommute) * 5)
       }
       
       mods <- c(mods,"Average Car")
