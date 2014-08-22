@@ -9,14 +9,6 @@ epa$year <- as.factor(epa$Year)
 
 shinyServer(
   function(input, output, session) {
-    # Combine the selected variables into a new data frame
-#     selectedData <- reactive({
-#       if (input$recent == FALSE)
-#         data2
-#       else
-#         data2[data2$year %in% c("2009","2010","2011","2012","2013","2014"),]
-#     })
-
     
     observe({
       models <- epa[epa$Make==input$makeSel,"Model"]
@@ -45,8 +37,13 @@ shinyServer(
         costs <- c(costs, Cost=compDailyCost(epa_data, dailyCommute, input$el_price, input$gas_price) * 5)
       }
       
-      mods <- c(mods,"Average Car")
+      mods <- c(mods," Average Car")
       costs <- c(costs, dailyCommute / 23 * 5 * input$gas_price)
+      
+      # Remove duplicate modesl
+      dupes <- duplicated(mods)
+      mods <- mods[!dupes]
+      costs <- costs[!dupes]
       
       out <- data.frame(Model=mods, Cost=costs)
       out$dispCost <- sprintf("$%3.2f",costs)
@@ -54,12 +51,14 @@ shinyServer(
           maxY <- 40
       else
           maxY <- max(out$Cost) + 5
+      
       ggplot(out, aes(x=Model, y=Cost, fill=Model)) + geom_bar(stat="identity") + 
         geom_text(aes(label=dispCost), vjust=1.5, colour="white") +
         geom_text(aes(label=Model), vjust=3, colour="white") +
-        ggtitle("Weekly Fuel Cost") + ylim(0,maxY) +  
+        ggtitle("Weekly Commute Fuel Cost") + ylim(0,maxY) +  
         ylab("US Dollars") +
-        theme(axis.text.x=element_text(size=12))
+        theme(axis.text.x=element_text(size=12),
+              plot.title=element_text(size=18)) + guides(fill=FALSE)
     })
   
 })
