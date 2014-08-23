@@ -3,7 +3,7 @@ library(shiny)
 
 shinyUI(fluidPage(
   title = "EV Explorer",
-  titlePanel("EV Explorer - Compare Weekly Commute Costs"),
+  titlePanel("EV Explorer - Compare Weekly Commute Fuel Costs"),
   
   sidebarLayout(
     sidebarPanel(
@@ -11,11 +11,11 @@ shinyUI(fluidPage(
       helpText("Pick up to two EV/plug-in Hybrid models",
                " to compare the weekly fuel costs compared",
                " to the current average US car."),
-      h5("First Car to Compare:"),
+      h5("First Vehicle to Compare:"),
       selectInput("makeSel","Make","",selectize=F),
       selectInput("modelSel","Model","",selectize=F),
       #p(),
-      h5("Second Car to Compare:"),
+      h5("Second Vehicle to Compare:"),
       selectInput("makeSel2","Make","",selectize=F),
       selectInput("modelSel2","Model","",selectize=F),
 
@@ -39,7 +39,11 @@ shinyUI(fluidPage(
     
     mainPanel(
       plotOutput("plot1"),
-      helpText("* Based on EPA data")
+      helpText("* Fuel costs calculated using EPA data for combined MPG for gas",
+               "operation and and kWh/100 miles electrical operation.",
+               "Assumed no mid-day recharge of battery unless car is a pure EV",
+               "and total daily commute is greater than total range of car on one charge."),
+      helpText("** Current average US car gets 23 MPG combined.")
     )
     )
   ))

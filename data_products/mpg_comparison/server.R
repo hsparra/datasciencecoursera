@@ -37,7 +37,7 @@ shinyServer(
         costs <- c(costs, Cost=compDailyCost(epa_data, dailyCommute, input$el_price, input$gas_price) * 5)
       }
       
-      mods <- c(mods," Average Car")
+      mods <- c(mods," Average Car**")
       costs <- c(costs, dailyCommute / 23 * 5 * input$gas_price)
       
       # Remove duplicate modesl
@@ -51,11 +51,11 @@ shinyServer(
           maxY <- 40
       else
           maxY <- max(out$Cost) + 5
-      
+
       ggplot(out, aes(x=Model, y=Cost, fill=Model)) + geom_bar(stat="identity") + 
         geom_text(aes(label=dispCost), vjust=1.5, colour="white") +
         geom_text(aes(label=Model), vjust=3, colour="white") +
-        ggtitle("Weekly Commute Fuel Cost") + ylim(0,maxY) +  
+        ggtitle("Weekly Commute Fuel Cost*") + ylim(0,maxY) +  
         ylab("US Dollars") +
         theme(axis.text.x=element_text(size=12),
               plot.title=element_text(size=18)) + guides(fill=FALSE)
