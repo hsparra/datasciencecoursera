@@ -20,10 +20,10 @@ shinyUI(fluidPage(
       selectInput("modelSel2","Model","",selectize=F),
 
       hr(),
-      h4("Average Daily Commute"),
+      h4("Average Daily Roundtrip Commute"),
       helpText("You can change the daily commute distance to",
-               "be how far you drive each weekday."),
-      sliderInput("daily_com","",min=1, max=100, value=40),
+               "be how far you drive each weekday. (default to US Average)"),
+      sliderInput("daily_com","",min=1, max=120, value=51),
       
       hr(),
       h4("Fuel Prices"),
