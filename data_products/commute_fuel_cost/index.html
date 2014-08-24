@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Electrification of Vehicles</title>
+  <meta charset="utf-8">
+  <meta name="description" content="Electrification of Vehicles">
+  <meta name="author" content="">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/solarized_light.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>Electrification of Vehicles</h1>
+    <h2>Helping Consumers Compare</h2>
+    <p><br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>Vehicle Landscape is Changing</h2>
+  </hgroup>
+  <article data-timings="">
+    <h3>Here come the plugins</h3>
+
+<ul>
+<li>More vehicles are being introduced with plugs</li>
+<li>Consumers are wondering what does it cost to operate</li>
+<li>A major operating costs is fuel used during weekly commute</li>
+<li>Consumers want to know <code>&quot;how much to fill up the tank?&quot;</code></li>
+</ul>
+
+<h3>Challenge</h3>
+
+<ul>
+<li>Gas prices vary by location</li>
+<li>Electricity rates vary by location</li>
+<li>Different people have different commutes</li>
+<li>What if the car only uses electricity part of the time?</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h2>A First Step - Calculate Cost of Weekly Commute</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>Allow user to select up to two alternative energy vehicles</li>
+<li>Allow user to change daily commute distance</li>
+<li>Allow user to adjust gas and electrity prices</li>
+<li>For reference, compare to average US car</li>
+<li>Use EPA data for calculations</li>
+<li>Show user weekly cost to power chosen vehicle to and from work</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="font-size:" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>Type of Simplified Results User Will See</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r">ggplot(out, aes(x=Model, y=Cost, fill=Model)) + geom_bar(stat=&quot;identity&quot;) + geom_text(aes(label=dispCost), vjust=1.5, colour=&quot;white&quot;) + geom_text(aes(label=Model), vjust=3, colour=&quot;white&quot;) + ggtitle(&quot;Weekly Commute Fuel Cost*&quot;) + ylim(0,maxY) +  ylab(&quot;US Dollars&quot;) + theme(axis.text.x=element_text(size=12),plot.title=element_text(size=18)) + guides(fill=FALSE)
+</code></pre>
+
+<p><img src="assets/fig/unnamed-chunk-2.png" alt="plot of chunk unnamed-chunk-2"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>Future Enhancements</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>Allow user to pick their gas car for comparison</li>
+<li>Allow user to adjust percent highway and city of commute</li>
+<li>Allow user to add side trips and weekends</li>
+<li>Compute Monthly and Yearly Costs</li>
+<li>Allow user to enter one-time trips</li>
+</ul>
+
+<h2>Give it a try now</h2>
+
+<p><a href="http://hsparra.shinyapps.io/mpg_comparison/">Weelky Commut Cost Comparison</a></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Vehicle Landscape is Changing'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='A First Step - Calculate Cost of Weekly Commute'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Type of Simplified Results User Will See'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Future Enhancements'>
+         4
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+<script src="http://bartaz.github.io/sandbox.js/jquery.highlight.js"></script>
+
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>
