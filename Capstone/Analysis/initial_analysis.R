@@ -43,12 +43,18 @@ crp[[1]]$content[100:120]
 
 # Clean up corpus
 clean_crp <- tm_map(crp, content_transformer(tolower))   # Will convert proper names to lower case
+# or if processing vector
+twit_subset <- tolower(twit_subset)
+
 # Create function to convert passed characters to spaces
 toSpace <- content_transformer(function(x, pattern) gsub(pattern, " ", x))
 clean_crp <- tm_map(clean_crp, toSpace, "/|@|\\|")
+# or if vector
+twit_subset <- gsub("/|@|\\|", " ", twit_subset)
 
 # getTransformations() lists available options for tm_map
 clean_crp <- tm_map(clean_crp, removeNumbers)
+twit_subset <- gsub([0-9], "", twit_subset)
 # clean_crp <- tm_map(clean_crp, removePunctuation)
 clean_crp <- tm_map(clean_crp, removeWords, stopwords("english"))    # Remove english stop words
 # remove own stopwords
@@ -124,4 +130,6 @@ close(con)
 
 ## N-Grams
 #library(RWeka)  # <--- Crashes on OS x, requires Java 6
-library(tau)
+library(tau)  # see http://www.rdocumentation.org/packages/tau/functions/textcnt
+txt <- textcnt(more_than_one_s, method="string", n=2L)  # 1-gram
+#library(ngram)
