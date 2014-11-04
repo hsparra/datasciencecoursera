@@ -44,17 +44,16 @@ crp[[1]]$content[100:120]
 # Clean up corpus
 clean_crp <- tm_map(crp, content_transformer(tolower))   # Will convert proper names to lower case
 # or if processing vector
-twit_subset <- tolower(twit_subset)
+#twit_subset <- tolower(twit_subset)
 
 # Create function to convert passed characters to spaces
 toSpace <- content_transformer(function(x, pattern) gsub(pattern, " ", x))
 clean_crp <- tm_map(clean_crp, toSpace, "/|@|\\|")
-# or if vector
-twit_subset <- gsub("/|@|\\|", " ", twit_subset)
+
 
 # getTransformations() lists available options for tm_map
 clean_crp <- tm_map(clean_crp, removeNumbers)
-twit_subset <- gsub([0-9], "", twit_subset)
+
 # clean_crp <- tm_map(clean_crp, removePunctuation)
 clean_crp <- tm_map(clean_crp, removeWords, stopwords("english"))    # Remove english stop words
 # remove own stopwords
@@ -64,6 +63,9 @@ clean_crp <- tm_map(clean_crp, stripWhitespace)
 # specific transformations
 toString <- content_transformer(function(x, from, to) gsub(from, to, x))
 #docs <- tm_map(docs, toString, "harbin institute technology", "HIT")
+
+
+
 
 # get rid of bad words
 Need to find a decent list, perhaps: https://github.com/shutterstock/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words
@@ -128,8 +130,37 @@ wrd_cnt <- table(unlist(lapply(readLines(con), strsplit, "")))
 close(con)
 
 
+
+## work with small file only
+# read and clean up small file
+con <- file("../small_twitter.txt")
+sm_t <- readLines(con)
+close(con)
+sm_t <- tolower(sm_t)
+sm_t <- gsub("/|@|\\|", " ", sm_t)
+sm_t <- gsub("[0-9]", "", sm_t)  # remove numbers
+# stemming - want to remove 'ing' from words that match "grep [aeiou].*ing$"
+library(tm)
+myStopWords <- stopwords(kind = "english")
+libarary(tm)
+sm_t <- remove_stopwords(sm_t, myStopWords, lines=TRUE)
+library(SnowballC)
+sm_t <- tokenize(sm_t, lines = TRUE) %>%
+    wordStem %>%
+    paste(collapse = "") %>%
+    strsplit(split = "\n") %>%
+    unlist
+
+
 ## N-Grams
 #library(RWeka)  # <--- Crashes on OS x, requires Java 6
 library(tau)  # see http://www.rdocumentation.org/packages/tau/functions/textcnt
-txt <- textcnt(more_than_one_s, method="string", n=2L)  # 1-gram
+words <- textcnt(sm_t, method = "string", n = 1L)   # get words
+word_df <- data.frame(word = names(words), counts = unclass(words), size = nchar(names(words)))
+#stem
+
+one_gram <- textcnt(more_than_one_s, method="string", n=2L)  # 1-gram
+two_gram <- textcnt(more_than_one_s, method="string", n=3L)  # 2-gram
 #library(ngram)
+
+
