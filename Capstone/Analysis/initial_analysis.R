@@ -236,5 +236,31 @@ subset(wf, index < 200) %>%
   geom_area()
 
 library(tau)  # see http://www.rdocumentation.org/packages/tau/functions/textcnt
-txt <- textcnt(more_than_one_s, method="string", n=2L)  # bigram
+words <- textcnt(sm_t, method = "string", n = 1L)   # get words
+word_df <- data.frame(word = names(words), counts = unclass(words), size = nchar(names(words)))
+#stem
+
+one_gram <- textcnt(more_than_one_s, method="string", n=2L)  # 1-gram
+two_gram <- textcnt(more_than_one_s, method="string", n=3L)  # 2-gram
 #library(ngram)
+
+
+## work with small file only
+# read and clean up small file
+con <- file("../small_twitter.txt")
+sm_t <- readLines(con)
+close(con)
+sm_t <- tolower(sm_t)
+sm_t <- gsub("/|@|\\|", " ", sm_t)
+sm_t <- gsub("[0-9]", "", sm_t)  # remove numbers
+# stemming - want to remove 'ing' from words that match "grep [aeiou].*ing$"
+library(tm)
+myStopWords <- stopwords(kind = "english")
+libarary(tm)
+sm_t <- remove_stopwords(sm_t, myStopWords, lines=TRUE)
+library(SnowballC)
+sm_t <- tokenize(sm_t, lines = TRUE) %>%
+  wordStem %>%
+  paste(collapse = "") %>%
+  strsplit(split = "\n") %>%
+  unlist
