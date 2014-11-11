@@ -8,6 +8,7 @@ registerDoMC(2)
 
 library(SnowballC)
 library(tm)
+library(RWeka)
 library(ggplot2)
 library(magrittr)
 library(tau)
@@ -66,6 +67,18 @@ cleanCorpus <- function(crp) {
   clean_crp
 }
 
+cleanText <- function(data) {
+    data <- removeNonASCII(data)
+    data <- tolower(data)
+    data <- gsub("/|@|\\|", " ", data)
+    data <- gsub("[0-9]", "", data)       # remove numbers
+    # remove text in brackets since probably has different context
+    #data <- c(gsub("[(].+?[)]", "", data), regmatches(data, regexpr("[(].+?[)]", data)))
+    # exclude punctuations
+    data <- gsub("\\]", " ", gsub("\\[", " ", gsub("[…|•“”!\"#&$%\\(\\)*+./:;<=>?@^_`\\{|\\}~,/\\-]", " ", data)))
+    data <- gsub("[ ]{2, }", " ", data)         # remove extra whitespaces
+}
+
 # Create sample files of file
 set.seed(10)
 createSampleFile("../en_US/en_US.twitter.txt", "../twit_samp.txt")
@@ -79,11 +92,6 @@ twit_subset <- getFileData("../twit_samp.txt")
 # Read in Twitter Subset
 head(twit_subset)
 
-# Replace unicode characters - Not working
-twit_subset <- gsub("/\U[0-9a-f]{8}", "" twit_subset)
-#twit_subset <- na.omit(wf[iconv(wf$word, "UTF-8", "ASCII", sub=""),])
-## NEED to Remove WWW. URLs
-# Need to handle Unicode characters
 
 # Read into a corpus
 crp <- VCorpus(DirSource("..", pattern="twit_samp.txt"), readerControl = list(language="english"))
@@ -96,20 +104,13 @@ crp <- cleanCorpus(crp)
 # Free space
 gc()
 
-# or if processing vector
-twit_subset <- tolower(twit_subset)
-twit_subset <- gsub("/|@|\\|", " ", twit_subset)
-
-# getTransformations() lists available options for tm_map
-twit_subset <- gsub([0-9], "", twit_subset)
-# clean_crp <- tm_map(clean_crp, removePunctuation)
 
 # remove own stopwords
 # clean_crp <- tm_map(clean_crp, removeWords, c("word1", "word2"))
 #docs <- tm_map(docs, replaceStringWith, "harbin institute technology", "HIT")
 
 # get rid of bad words
-Need to find a decent list, perhaps: https://github.com/shutterstock/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words
+# Need to find a decent list, perhaps: https://github.com/shutterstock/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words
 
 ### Need to remove repeating punctuations
 # regex ex. "!{2,}" or "-{2,}"
@@ -254,12 +255,9 @@ two_gram <- textcnt(more_than_one_s, method="string", n=3L)  # 2-gram
 ## work with small file only
 # read and clean up small file
 sm_t <- getFileData("../twit_samp.txt")
-sm_t <- tolower(sm_t)
-sm_t <- gsub("/|@|\\|", " ", sm_t)
-sm_t <- gsub("[0-9]", "", sm_t)  # remove numbers
+sm_t <- cleanText(sm_t)
 # stemming - want to remove 'ing' from words that match "grep [aeiou].*ing$"
-#library(tm)
-#library(tau)
+
 myStopWords <- stopwords(kind = "english")
 
 sm_t <- remove_stopwords(sm_t, myStopWords, lines=TRUE)
@@ -280,6 +278,13 @@ trigram <- textcnt(more_than_one_s, method="string", n=3L)  # trigram
 
 bigram_df <- data.frame(word = names(bigram), counts = as.numeric(unclass(bigram))) %>%
     arrange(desc(counts))
+
+# NGrams using RWeka
+bigrams <- NGramTokenizer(sm_t, control = Weka_control(min=2, max=2, dilimiters = " '"))
+
+# Use data table to quickly generate counts
+bi <- data.table(sm_t)
+bi.cnt <- bi[,count := .N, by = sm_t]
 
 
 # Using ngram package
