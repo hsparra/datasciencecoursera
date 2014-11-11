@@ -10,9 +10,11 @@ library(SnowballC)
 library(tm)
 library(ggplot2)
 library(magrittr)
+library(tau)
+library(dplyr)
 
 # Check on the number of twitter records
-readLines("wc -l ../en_US/en_US.twitter.txt")
+system("wc -l ../en_US/en_US.twitter.txt")
 
 createSampleFile <- function(inFile, outFile) {
   con <- file(inFile,"r")
@@ -46,12 +48,15 @@ removeNonASCII <- function(x) {
 
 # Create function to convert passed characters to spaces
 toSpace <- content_transformer(function(x, pattern) gsub(pattern, " ", x))
+removeString <- content_transformer(function(x, pattern) gsub(pattern, "", x))
 # specific transformations
 replaceStringWith <- content_transformer(function(x, from, to) gsub(from, to, x))
 
 cleanCorpus <- function(crp) {
   clean_crp <- tm_map(crp, content_transformer(tolower))   # Will convert proper names to lower case  
   clean_crp <- tm_map(clean_crp, toSpace, "/|@|\\|")
+  clean_crp <- tm_map(clean_crp, replaceStringWith, "--", "")
+  clean_crp <- tm_map(clean_crp, removeString, "_")
   clean_crp <- tm_map(clean_crp, removeNumbers)
   clean_crp <- tm_map(clean_crp, removePunctuation)
   clean_crp <- tm_map(clean_crp, removeWords, stopwords("english"))    # Remove english stop words
@@ -75,7 +80,7 @@ head(twit_subset)
 
 # Replace unicode characters - Not working
 twit_subset <- gsub("/\U[0-9a-f]{8}", "" twit_subset)
-twit_subset <- na.omit(wf[iconv(wf$word, "UTF-8", "ASCII", sub=""),])
+#twit_subset <- na.omit(wf[iconv(wf$word, "UTF-8", "ASCII", sub=""),])
 ## NEED to Remove WWW. URLs
 # Need to handle Unicode characters
 
@@ -247,20 +252,30 @@ two_gram <- textcnt(more_than_one_s, method="string", n=3L)  # 2-gram
 
 ## work with small file only
 # read and clean up small file
-con <- file("../small_twitter.txt")
-sm_t <- readLines(con)
-close(con)
+sm_t <- getFileData("../twit_samp.txt")
 sm_t <- tolower(sm_t)
 sm_t <- gsub("/|@|\\|", " ", sm_t)
 sm_t <- gsub("[0-9]", "", sm_t)  # remove numbers
 # stemming - want to remove 'ing' from words that match "grep [aeiou].*ing$"
-library(tm)
+#library(tm)
+#library(tau)
 myStopWords <- stopwords(kind = "english")
-libarary(tm)
+
 sm_t <- remove_stopwords(sm_t, myStopWords, lines=TRUE)
-library(SnowballC)
+#library(SnowballC)
 sm_t <- tokenize(sm_t, lines = TRUE) %>%
   wordStem %>%
   paste(collapse = "") %>%
   strsplit(split = "\n") %>%
   unlist
+
+words <- textcnt(sm_t, method = "string", n = 1L)   # get words
+word_df <- data.frame(word = names(words), counts = as.numeric(unclass(words)), size = nchar(names(words))) %>%
+    arrange(desc(counts), size)
+#stem
+
+bigram <- textcnt(more_than_one_s, method="string", n=2L)  # bigram
+trigram <- textcnt(more_than_one_s, method="string", n=3L)  # trigram
+
+bigram_df <- data.frame(word = names(bigram), counts = as.numeric(unclass(bigram))) %>%
+    arrange(desc(counts))
