@@ -12,6 +12,7 @@ library(ggplot2)
 library(magrittr)
 library(tau)
 library(dplyr)
+library(ngram)
 
 # Check on the number of twitter records
 system("wc -l ../en_US/en_US.twitter.txt")
@@ -279,3 +280,6 @@ trigram <- textcnt(more_than_one_s, method="string", n=3L)  # trigram
 
 bigram_df <- data.frame(word = names(bigram), counts = as.numeric(unclass(bigram))) %>%
     arrange(desc(counts))
+
+
+# Using ngram package
