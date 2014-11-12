@@ -1,0 +1,37 @@
+---
+title: "Capstone Milestone Report"
+output: html_document
+---
+This report explores the initial exploratory analysis of the English text corpus for the Data Science Capstone course.
+
+# Explore the Data
+For this project we are given three files from different sources. See the *Supplemental Information* section for the R code to load the data and create the small er sample files we use for this analysis.
+
+First we load in the data and get some line and word counts.
+```{r}
+# load the data
+t_samp <- readLines("twit_samp.txt")
+b_samp <- readLines("blog_samp.txt")
+n_samp <- readLines("news_samp.txt")
+
+cleanText <- function(data) {
+    data <- iconv(data, "UTF-8", "ASCII", sub="")
+    data <- tolower(data)
+    data <- gsub("/|@|\\|", " ", data)
+    data <- gsub("[0-9]", "", data)       # remove numbers
+    # remove text in brackets since probably has different context
+    #data <- c(gsub("[(].+?[)]", "", data), regmatches(data, regexpr("[(].+?[)]", data)))
+    # exclude punctuations
+    data <- gsub("\\]", " ", gsub("\\[", " ", gsub("[…|•“”!\"#&$%\\(\\)*+./:;<=>?@^_`\\{|\\}~,/\\-]", " ", data)))
+    data <- gsub("[ ]{2, }", " ", data)         # remove extra whitespaces
+}
+
+
+
+lines_per_corpus <- c(length(t_samp), length(b_samp), length(n_samp))
+t_clean <- clean_text(t_samp)
+words_per_corpus <- c(unlist(strsplit(t_clean, split=" ")))
+library(data.table)
+t_wrd_cnt <- table(words_per_corpus)
+td <- data.table(word = names(t_wrd_cnt), count = t_wrd_cnt)
+```
