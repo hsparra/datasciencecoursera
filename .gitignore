@@ -57,3 +57,17 @@ twit_samp.txt
 
 
 Capstone/Analysis/initial_analysis copy.R
+
+data_products/.RData
+
+data_products/.Rhistory
+
+data_products/gaData.csv
+
+machine_learning/data/pml-testing.csv
+
+machine_learning/data/pml-training.csv
+
+*.rdb
+
+*.rdx
