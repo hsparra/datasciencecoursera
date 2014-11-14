@@ -6,26 +6,28 @@ This report explores the initial exploratory analysis of the English text corpus
 
 # Explore the Data
 For this project we are given three files from different sources. See the *Supplemental Information* section for the R code to load the data and create the small er sample files we use for this analysis.
-
-First we load in the data and get some line counts.
-```{r}
+```{r, echo=FALSE}
 library(tau)
-library(ggpot2)
+suppressMessages(library(ggplot2))
 library(magrittr)
+suppressMessages(library(tm))
+```
+First we load in the data and get some line counts.
+```{r, fig.height=3, cache=TRUE}
 # load the data
 t_samp <- readLines("twit_samp.txt")
 b_samp <- readLines("blog_samp.txt")
 n_samp <- readLines("news_samp.txt")
 
-lines_per_corpus <- c(length(t_samp), length(b_samp), length(n_samp))
+lines <- data.frame(lines = c(length(t_samp), length(b_samp), length(n_samp)))
+lines$srce <- c("Twitter", "Blogs", "News")
+ggplot(lines, aes(x=as.factor(srce), y=lines)) + geom_bar(stat="identity", fill="darkblue") + labs(x = "Source", y = "Number of Lines", title = "Lines of text by source")
 ```
 
 Clean up the data a little, such as getting rid of punctuation and non-letter charactrs, then get word counts.
-```{r}
+```{r, echo=FALSE}
 cleanText <- function(data) {
     data <- tolower(data)
-    
-    
     data <- gsub("/|@|\\|", " ", data)
     data <- gsub("[0-9]", "", data)       # remove numbers
     #data <- gsub("[a-z]'s ", " is", data)
@@ -43,7 +45,8 @@ cleanText <- function(data) {
     data <- gsub("[ ]{2, }", " ", data)         # remove extra whitespaces
     data <- remove_stopwords(data, stopwords(kind="english"))
 }
-
+```
+```{r, cache=TRUE}
 t_clean <- cleanText(t_samp)
 b_clean <- cleanText(b_samp)
 n_clean <- cleanText(n_samp)
@@ -52,8 +55,8 @@ t_words <- c(unlist(strsplit(t_clean, split=" ")))
 b_words <- c(unlist(strsplit(b_clean, split=" ")))
 n_words <- c(unlist(strsplit(n_clean, split=" ")))
 
-counts <- data.frame(measure = "Number of words",twitter = length(t_words), blogs = length(b_words), news = length(n_words))
-counts <- rbind(counts, data.frame(measure = "Number of unique words", twitter = length(unique(t_words)), blogs = length(unique(b_words)), news = length(unique(n_words))))
+rbind(data.frame(measure = "Number of words",twitter = length(t_words), blogs = length(b_words), news = length(n_words)),
+      data.frame(measure = "Number of unique words", twitter = length(unique(t_words)), blogs = length(unique(b_words)), news = length(unique(n_words))))
 ```
 
 
@@ -63,33 +66,32 @@ library(data.table)
 t_wrd_cnt <- table(t_words)
 t_td <- data.table(word = names(t_wrd_cnt), count = as.numeric(t_wrd_cnt))
 t_td <- t_td[order(-count)]
-t_td[,src := "twitter"][, index := seq_len(length(t_td$count))]
+t_td <- t_td[,src := "twitter"][, index := seq_len(length(t_td$count))]
 df <- data.frame(t_td[1:100])
 
 
 b_wrd_cnt <- table(b_words)
 b_td <- data.table(word = names(b_wrd_cnt), count=as.numeric(b_wrd_cnt))
 b_td <- b_td[order(-count)]
-b_td[,src := "blogs",][, index := seq_len(length(b_td$count))]
+b_td <- b_td[,src := "blogs",][, index := seq_len(length(b_td$count))]
 df <- rbind(df, b_td[1:100])
 
 n_wrd_cnt <- table(n_words)
 n_td <- data.table(word = names(n_wrd_cnt), count=as.numeric(n_wrd_cnt))
 n_td <- n_td[order(-count)]
-n_td[,src := "news"][, index := seq_len(length(n_td$count))]
+n_td <- n_td[,src := "news"][, index := seq_len(length(n_td$count))]
 df <- rbind(df, n_td[1:100])
 
-# word distribution of 1000 most common words
-#td[, index := seq_len(dim(td)[1])]
+
 ggplot(df, aes(x=index, y=count)) + geom_line() + facet_grid(. ~ src)
 
 ```
 
 Add a cummulative frequiency so can see how many words cover 50% and 90% of word occurrences.
 ```{r}
-td[, cum_count := cumsum(td$count)]
-tail(td$cum_count,1) %>%
+t_td <- t_td[, cum_count := cumsum(t_td$count)]
+tail(t_td$cum_count,1) %>%
     function (x)
-        cat("Number of words for\n\t50% coverage:", min(which(td$cum_count >= x * .5,)),
-            "\n\t90% coverage:", min(which(td$cum_count >= x * .9)))
+        cat("Number of words for\n\t50% coverage:", min(which(t_td$cum_count >= x * .5,)),
+            "\n\t90% coverage:", min(which(t_td$cum_count >= x * .9)))
 ```
