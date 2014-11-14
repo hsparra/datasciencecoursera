@@ -98,7 +98,7 @@ coverage_df
 
 ```
 
-```{r, eval=FALSE, echo=FALSE}
+```{r, cache=TRUE, echo=FALSE}
 # own n_gram creator given a vector sentences
 createNGram <- function(inSentence, ngramNum = 2) {
     x <- unlist(strsplit(inSentence, " "))
