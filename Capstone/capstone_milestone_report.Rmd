@@ -11,6 +11,9 @@ library(tau)
 suppressMessages(library(ggplot2))
 library(magrittr)
 suppressMessages(library(tm))
+suppressMessages(library(SnowballC))
+suppressMessages(library(dplyr))
+suppressMessages(library(data.table))
 ```
 First we load in the data and get some line counts.
 ```{r, fig.height=3, cache=TRUE}
@@ -21,20 +24,28 @@ n_samp <- readLines("news_samp.txt")
 
 lines <- data.frame(lines = c(length(t_samp), length(b_samp), length(n_samp)))
 lines$srce <- c("Twitter", "Blogs", "News")
-ggplot(lines, aes(x=as.factor(srce), y=lines)) + geom_bar(stat="identity", fill="darkblue") + labs(x = "Source", y = "Number of Lines", title = "Lines of text by source")
+ggplot(lines, aes(x=as.factor(srce), y=lines)) + geom_bar(stat="identity", fill="darkblue") + 
+    labs(x = "Source", y = "Number of Lines", title = "Lines of text by source")
 ```
 
 Clean up the data a little, such as getting rid of punctuation and non-letter charactrs, then get word counts.
 ```{r, echo=FALSE}
-toSpace <- function(x, pattern) gsub(pattern, " ", x)
-cleanText <- function(data) {
+
+cleanText <- function(data, split=FALSE) {
     data <- unlist(strsplit(data, split=" "))   %>% 
         tolower                                 %>% 
         remove_stopwords(stopwords())           %>%
-        function (x) gsub("[^a-z]", "", x)      %>%
-        function (x) gsub("[ ]", "", x)         %>%
-        function (x) x[ x != ""]                %>%
+        function (x) gsub("[[:punct:]]", " ", x) %>%
+        function (x) gsub("[^a-z]", " ", x)      %>%
+        function (x) gsub("[ ]{2}", " ", x)         %>%
+        function (x) x[ x != " "]                %>%
         wordStem
+    if (split) {
+        data <- paste(data, collapse = " ")
+    } else {
+        data <- unlist(strsplit(data, split = " "))
+    }
+    data
 }
 ```
 ```{r, cache=TRUE}
@@ -49,49 +60,77 @@ rbind(data.frame(measure = "Number of words",twitter = length(t_words), blogs = 
 
 Look at the distribution of the words
 ```{r}
-library(data.table)
-t_wrd_cnt <- table(t_words)
-t_td <- data.table(word = names(t_wrd_cnt), count = as.numeric(t_wrd_cnt))
-t_td <- t_td[order(-count)]
-t_td <- t_td[,src := "twitter"][, index := seq_len(length(t_td$count))]
-df <- data.frame(t_td[1:100])
+createTableOfCounts <- function(x, id="default") {
+    wrds <- table(x)
+    df <- data.table(word = names(wrds), count = as.numeric(wrds)) %>%
+        mutate(src = id) %>%
+        arrange(desc(count)) %>%
+        mutate(index = seq_len(length(count)), cum_count = cumsum(count))
+}
 
+t_df <- createTableOfCounts(t_words, "twitter")
+b_df <- createTableOfCounts(b_words, "blogs")
+n_df <- createTableOfCounts(n_words, "news")
 
-b_wrd_cnt <- table(b_words)
-b_td <- data.table(word = names(b_wrd_cnt), count=as.numeric(b_wrd_cnt))
-b_td <- b_td[order(-count)]
-b_td <- b_td[,src := "blogs",][, index := seq_len(length(b_td$count))]
-df <- rbind(df, b_td[1:100])
-
-n_wrd_cnt <- table(n_words)
-n_td <- data.table(word = names(n_wrd_cnt), count=as.numeric(n_wrd_cnt))
-n_td <- n_td[order(-count)]
-n_td <- n_td[,src := "news"][, index := seq_len(length(n_td$count))]
-df <- rbind(df, n_td[1:100])
-
+df <- rbind(t_df[1:500], b_df[1:500], n_df[1:500])
 
 ggplot(df, aes(x=index, y=count)) + geom_line() + facet_grid(. ~ src)
 
 ```
 
 Add a cummulative frequiency so can see how many words cover 50% and 90% of word occurrences.
-```{r}
-showToCover <- function (td) {
-    td <- td[, cum_count := cumsum(td$count)]
-    tail(td$cum_count,1) %>%
-        function (x)
-            cat("Number of words for\n\t50% coverage:", min(which(td$cum_count >= x * .5,)),
-                "\n\t90% coverage:", min(which(td$cum_count >= x * .9)), 
-                "\t which equals", min(which(td$cum_count >= x * .9))/length(td$word), "of unique words"
-                )
+```{r, echo=FALSE}
+coverageNums <- function( df, percent) {
+    val <- tail(df$cum_count, 1)
+    words_needed <- min(which(df$cum_count >= val * percent))
+    src <- df$src[1]
+    data.frame(Source = src, 
+               Coverage = paste(percent * 100, "%", sep=""),
+               Words_Needed= words_needed, 
+               Percent_of_Unique_Words = paste(format(words_needed / length(df$word) * 100, digits=0), "%", sep=""))
 }
+```
+```{r}
+coverage_df <- coverageNums(t_df, .5) %>% rbind(coverageNums(b_df, .5)) %>% rbind(coverageNums(n_df, .5)) %>% 
+    rbind(coverageNums(t_df, .9)) %>% rbind(coverageNums(b_df, .9)) %>%rbind(coverageNums(n_df, .9))
 
-showToCover(t_td)
-showToCover(b_td)
-showToCover(n_td)
+coverage_df
 
 ```
 
-```{r}
+```{r, eval=FALSE, echo=FALSE}
+# own n_gram creator given a vector sentences
+createNGram <- function(inSentence, ngramNum = 2) {
+    x <- unlist(strsplit(inSentence, " "))
+    y <- paste(x[seq(from=1, to=length(x) - 1, by=1)], x[seq(from=2, to=length(x), by=1)], sep = " ")
+}
+
+#x <- c("A first line to parse", "A second line to parse", "Yet another something to work #2 with!!")
+#y <- lapply(x, createNGram)
+#y <- sapply(x, createNGram)   # will create vector of NGrams if x is a vectoy
+z <- sapply(t_samp, cleanText, TRUE)
+#z <- sapply(t_samp, cleanText) %>% sapply(createNGram) %>% unlist  # create vector of NGrams
+
 #crp <- VCorpus(VectorSource(t_clean), readerControl = list(language="english"))
+suppressMessages(library(RWeka))
+bigram_rw <- NGramTokenizer(z, control=Weka_control(min=2, max=2, dilimeters = " "))
+t_bi <- createTableOfCounts(bigram_rw, "twitter")
+b_bi <- sapply(b_samp, cleanText, TRUE) %>%
+    NGramTokenizer(control=Weka_control(min=2, max=2, dilimeters = " ")) %>%
+    createTableOfCounts("blogs")
+n_bi <- sapply(n_samp, cleanText, TRUE) %>%
+    NGramTokenizer(control=Weka_control(min=2, max=2, dilimeters = " ")) %>%
+    createTableOfCounts("news")
+
+# Graph distro
+bi_df <- rbind(t_bi[1:500], b_bi[1:500], n_bi[1:500])
+
+ggplot(bi_df, aes(x=index, y=count)) + geom_line() + facet_grid(. ~ src)
+
+coverage_bi <- coverageNums(t_bi, .5) %>% rbind(coverageNums(b_bi, .5)) %>% rbind(coverageNums(n_bi, .5)) %>% 
+    rbind(coverageNums(t_bi, .9)) %>% rbind(coverageNums(b_bi, .9)) %>%rbind(coverageNums(n_bi, .9))
+
+coverage_bi
+# from tau library
+#bigrams <- textcnt(z, method="string", n=2L)
 ```
