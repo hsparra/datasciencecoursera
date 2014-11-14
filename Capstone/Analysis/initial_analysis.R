@@ -18,12 +18,12 @@ library(ngram)
 # Check on the number of twitter records
 system("wc -l ../en_US/en_US.twitter.txt")
 
-createSampleFile <- function(inFile, outFile) {
+createSampleFile <- function(inFile, outFile, percent = .01) {
   con <- file(inFile,"r")
   fullFile <- readLines(con)
   close(con)
   
-  to_select <- rbinom(n = length(fullFile), size = 1, prob=.01)
+  to_select <- rbinom(n = length(fullFile), size = 1, prob = percent)
   to_select <- to_select > 0
   file_subset <- fullFile[to_select]
   
@@ -53,6 +53,7 @@ toSpace <- content_transformer(function(x, pattern) gsub(pattern, " ", x))
 removeString <- content_transformer(function(x, pattern) gsub(pattern, "", x))
 # specific transformations
 replaceStringWith <- content_transformer(function(x, from, to) gsub(from, to, x))
+removeNonCharacters <- content_transformer(function(x) gsub("[^a-z]", " ", x))
 
 cleanCorpus <- function(crp) {
   clean_crp <- tm_map(crp, content_transformer(tolower))   # Will convert proper names to lower case  
@@ -61,6 +62,7 @@ cleanCorpus <- function(crp) {
   clean_crp <- tm_map(clean_crp, removeString, "_")
   clean_crp <- tm_map(clean_crp, removeNumbers)
   clean_crp <- tm_map(clean_crp, removePunctuation)
+  clean_crp <- tm_map(clean_crp, removeNonCharacters)
   clean_crp <- tm_map(clean_crp, removeWords, stopwords("english"))    # Remove english stop words
   clean_crp <- tm_map(clean_crp, stripWhitespace)
   clean_crp <- tm_map(crp, stemDocument)
@@ -72,16 +74,18 @@ cleanText <- function(data) {
     data <- tolower(data)
     data <- gsub("/|@|\\|", " ", data)
     data <- gsub("[0-9]", "", data)       # remove numbers
+    data <- gsub("[^a-z]", "", data)
     # remove text in brackets since probably has different context
     #data <- c(gsub("[(].+?[)]", "", data), regmatches(data, regexpr("[(].+?[)]", data)))
     # exclude punctuations
     data <- gsub("\\]", " ", gsub("\\[", " ", gsub("[…|•“”!\"#&$%\\(\\)*+./:;<=>?@^_`\\{|\\}~,/\\-]", " ", data)))
     data <- gsub("[ ]{2, }", " ", data)         # remove extra whitespaces
+    data <- wordStem(data)
 }
 
 # Create sample files of file
 set.seed(10)
-createSampleFile("../en_US/en_US.twitter.txt", "../twit_samp.txt")
+createSampleFile("en_US/en_US.twitter.txt", "twit_samp.txt", .01)
 createSampleFile("../en_US/en_US.blogs.txt", "../blog_samp.txt")
 createSampleFile("../en_US/en_US.news.txt", "../news_samp.txt")
 gc()
@@ -95,6 +99,7 @@ head(twit_subset)
 
 # Read into a corpus
 crp <- VCorpus(DirSource("..", pattern="twit_samp.txt"), readerControl = list(language="english"))
+#crp <- VCorpus(VectorSource(t_clean), readerControl = list(language="english"))
 
 # look at the first 10 lines
 crp[[1]]$content[100:120]
@@ -112,22 +117,17 @@ gc()
 # get rid of bad words
 # Need to find a decent list, perhaps: https://github.com/shutterstock/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words
 
-### Need to remove repeating punctuations
-# regex ex. "!{2,}" or "-{2,}"
-
-# Stemp the words
-stemmed <- tm_map(crp, stemDocument)
 
 # create a Term Document matrix
-dtm <- DocumentTermMatrix(stemmed)
+dtm <- DocumentTermMatrix(crp)
 dtm
-inspect(dtm[1, 1:10])
+inspect(dtm[1:5, 1:10])
 dim(dtm)
 
 # Transpose the matrix
-tdm <- TermDocumentMatrix(stemmed)
+tdm <- TermDocumentMatrix(crp)
 dim(tdm)
-inspect(tdm[1:10,1])
+inspect(tdm[1:10,1:10])
 
 
 # Find fequency of terms (see if same as tdm)
@@ -288,3 +288,13 @@ bi.cnt <- bi[,count := .N, by = sm_t]
 
 
 # Using ngram package
+# own n_gram creator given a vector sentences
+createNGram <- function(inSentence, ngramNum = 2) {
+    x <- unlist(strsplit(inSentence, " "))
+    y <- paste(x[seq(from=1, to=length(x) - 1, by=1)], x[seq(from=2, to=length(x), by=1)], sep = " ")
+}
+
+x <- c("A first line to parse", "A second line to parse", "Yet another something to work #2 with!!")
+y <- lapply(x, createNGram)
+y <- sapply(x, createNGram)   # will create vector of NGrams if x is a vectoy
+z <- sapply(x, cleanText) %>% sapply(createNGram) %>% unlist  # create vector of NGrams
