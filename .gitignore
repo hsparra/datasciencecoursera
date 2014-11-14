@@ -71,3 +71,5 @@ machine_learning/data/pml-training.csv
 *.rdb
 
 *.rdx
+
+Capstone/twit_samp_10percent.txt
