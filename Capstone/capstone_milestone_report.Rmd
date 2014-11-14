@@ -26,34 +26,21 @@ ggplot(lines, aes(x=as.factor(srce), y=lines)) + geom_bar(stat="identity", fill=
 
 Clean up the data a little, such as getting rid of punctuation and non-letter charactrs, then get word counts.
 ```{r, echo=FALSE}
+toSpace <- function(x, pattern) gsub(pattern, " ", x)
 cleanText <- function(data) {
-    data <- tolower(data)
-    data <- gsub("/|@|\\|", " ", data)
-    data <- gsub("[0-9]", "", data)       # remove numbers
-    #data <- gsub("[a-z]'s ", " is", data)
-    # remove text in brackets since probably has different context
-    #data <- c(gsub("[(].+?[)]", "", data), regmatches(data, regexpr("[(].+?[)]", data)))
-    # exclude punctuations
-    #data <- remove_stopwords(sm_t, stopwords(kind = "english"), lines=TRUE)
-    #data <- gsub("\\]", " ", gsub("\\[", " ", gsub("[…|•“”!\"#&$%\\(\\)*+./:;<=>?@^_`\\{|\\}~,'/\\-]", " ", data)))
-    #data <- gsub("[…|•“”!\"#&$%\\(\\)*+./:;<=>?@^_`\\{|\\}~,'/\\-]", " ", data)
-    data <- gsub("[^a-z]", " ", data)
-    #data <- gsub("\\[", " ", data)
-    #data <- gsub("\\]", " ", data)
-    data <- iconv(data, "UTF-8", "ASCII", sub=" UNICODE ")
-    data <- gsub("[UNICODE]{2,}", " UNICODE", data)
-    data <- gsub("[ ]{2, }", " ", data)         # remove extra whitespaces
-    data <- remove_stopwords(data, stopwords(kind="english"))
+    data <- unlist(strsplit(data, split=" "))   %>% 
+        tolower                                 %>% 
+        remove_stopwords(stopwords())           %>%
+        function (x) gsub("[^a-z]", "", x)      %>%
+        function (x) gsub("[ ]", "", x)         %>%
+        function (x) x[ x != ""]                %>%
+        wordStem
 }
 ```
 ```{r, cache=TRUE}
-t_clean <- cleanText(t_samp)
-b_clean <- cleanText(b_samp)
-n_clean <- cleanText(n_samp)
-
-t_words <- c(unlist(strsplit(t_clean, split=" ")))
-b_words <- c(unlist(strsplit(b_clean, split=" ")))
-n_words <- c(unlist(strsplit(n_clean, split=" ")))
+t_words <- cleanText(t_samp)
+b_words <- cleanText(b_samp)
+n_words <- cleanText(n_samp)
 
 rbind(data.frame(measure = "Number of words",twitter = length(t_words), blogs = length(b_words), news = length(n_words)),
       data.frame(measure = "Number of unique words", twitter = length(unique(t_words)), blogs = length(unique(b_words)), news = length(unique(n_words))))
@@ -89,9 +76,22 @@ ggplot(df, aes(x=index, y=count)) + geom_line() + facet_grid(. ~ src)
 
 Add a cummulative frequiency so can see how many words cover 50% and 90% of word occurrences.
 ```{r}
-t_td <- t_td[, cum_count := cumsum(t_td$count)]
-tail(t_td$cum_count,1) %>%
-    function (x)
-        cat("Number of words for\n\t50% coverage:", min(which(t_td$cum_count >= x * .5,)),
-            "\n\t90% coverage:", min(which(t_td$cum_count >= x * .9)))
+showToCover <- function (td) {
+    td <- td[, cum_count := cumsum(td$count)]
+    tail(td$cum_count,1) %>%
+        function (x)
+            cat("Number of words for\n\t50% coverage:", min(which(td$cum_count >= x * .5,)),
+                "\n\t90% coverage:", min(which(td$cum_count >= x * .9)), 
+                "\t which equals", min(which(td$cum_count >= x * .9))/length(td$word), "of unique words"
+                )
+}
+
+showToCover(t_td)
+showToCover(b_td)
+showToCover(n_td)
+
+```
+
+```{r}
+#crp <- VCorpus(VectorSource(t_clean), readerControl = list(language="english"))
 ```
