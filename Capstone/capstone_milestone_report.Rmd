@@ -4,23 +4,24 @@ output: html_document
 ---
 This report explores the initial exploratory analysis of the English text corpus for the Data Science Capstone course.
 
-# Explore the Data
-For this project we are given three files from different sources. See the *Supplemental Information* section for the R code to load the data and create the small er sample files we use for this analysis.
+## Explore the Data
+For this project we are given three files from different sources. See the **Supplemental Information** section for the R code to load the data and create the smaller sample files we use for this analysis. The sample files were created using binomial sampling to select one percent of the full file.
 ```{r, echo=FALSE}
 library(tau)
 suppressMessages(library(ggplot2))
-library(magrittr)
+suppressMessages(library(magrittr))
 suppressMessages(library(tm))
 suppressMessages(library(SnowballC))
 suppressMessages(library(dplyr))
 suppressMessages(library(data.table))
 ```
-First we load in the data and get some line counts.
-```{r, fig.height=3, cache=TRUE}
-# load the data
-t_samp <- readLines("twit_samp.txt")
-b_samp <- readLines("blog_samp.txt")
-n_samp <- readLines("news_samp.txt")
+First we load in the data from our sample files and get some line counts.
+```{r, fig.height=3, fig.width=7, cache=TRUE}
+transform(file.info(list.files("data/sample/", full.names = T))[, "size", drop = FALSE], size = paste0(round(size / 1024 / 1024, 2), "MB"))
+
+t_samp <- readLines("data/sample/twit_samp.txt")
+b_samp <- readLines("data/sample/blog_samp.txt")
+n_samp <- readLines("data/sample/news_samp.txt")
 
 lines <- data.frame(lines = c(length(t_samp), length(b_samp), length(n_samp)))
 lines$srce <- c("Twitter", "Blogs", "News")
@@ -28,22 +29,25 @@ ggplot(lines, aes(x=as.factor(srce), y=lines)) + geom_bar(stat="identity", fill=
     labs(x = "Source", y = "Number of Lines", title = "Lines of text by source")
 ```
 
-Clean up the data a little, such as getting rid of punctuation and non-letter charactrs, then get word counts.
-```{r, echo=FALSE}
+Even though it is the smallest file, we that the twitter sample has substantially more lines of text. This is not that surprising since twitter limits lines of text to 140 characters per tweet while news articles and blogs have no such limit. For our purposes the number of words is more important so we will look at that across the three files.
 
+### Words
+Frist we will clean up the data a little, such as getting rid of punctuation and non-letter charactrs as well as stemming, then get word counts. The details of the `cleanText` function are covered in the **Supplemental information** section.
+```{r, echo=FALSE, cache=TRUE}
 cleanText <- function(data, split=FALSE) {
-    data <- unlist(strsplit(data, split=" "))   %>% 
-        tolower                                 %>% 
-        remove_stopwords(stopwords())           %>%
+    data <- unlist(strsplit(data, split=" "))    %>% 
+        tolower                                  %>% 
+        remove_stopwords(stopwords())            %>%
         function (x) gsub("[[:punct:]]", " ", x) %>%
         function (x) gsub("[^a-z]", " ", x)      %>%
-        function (x) gsub("[ ]{2}", " ", x)         %>%
+        function (x) gsub("[ ]{2}", " ", x)      %>%
         function (x) x[ x != " "]                %>%
         wordStem
     if (split) {
         data <- paste(data, collapse = " ")
     } else {
-        data <- unlist(strsplit(data, split = " "))
+        data <- unlist(strsplit(data, split = " ")) %>%
+            function (x) x[ x != ""]
     }
     data
 }
@@ -54,12 +58,10 @@ b_words <- cleanText(b_samp)
 n_words <- cleanText(n_samp)
 
 rbind(data.frame(measure = "Number of words",twitter = length(t_words), blogs = length(b_words), news = length(n_words)),
-      data.frame(measure = "Number of unique words", twitter = length(unique(t_words)), blogs = length(unique(b_words)), news = length(unique(n_words))))
+      data.frame(measure = "Number of unique words", twitter = length(unique(t_words)), blogs = length(unique(b_words)), news = length(unique(n_words)))  )
 ```
-
-
-Look at the distribution of the words
-```{r}
+We see that even with these small samples there are a large number of unique words in all the files. We also see that eventhough the twitter file as substantially more lines the blogs and news files have approximately 10% more unique words. Since the final product will probably have limited computing resources we will look at the distribution of the words in the different files. We will graph the 500 words in each file that appear the most often. The `createTableOfCounts` function is covered in detail in the **Supplemental information** section.
+```{r, echo=FALSE}
 createTableOfCounts <- function(x, id="default") {
     wrds <- table(x)
     df <- data.table(word = names(wrds), count = as.numeric(wrds)) %>%
@@ -67,18 +69,17 @@ createTableOfCounts <- function(x, id="default") {
         arrange(desc(count)) %>%
         mutate(index = seq_len(length(count)), cum_count = cumsum(count))
 }
-
+```
+```{r, fig.height=3, fig.width=7}
 t_df <- createTableOfCounts(t_words, "twitter")
 b_df <- createTableOfCounts(b_words, "blogs")
 n_df <- createTableOfCounts(n_words, "news")
 
 df <- rbind(t_df[1:500], b_df[1:500], n_df[1:500])
-
 ggplot(df, aes(x=index, y=count)) + geom_line() + facet_grid(. ~ src)
-
 ```
 
-Add a cummulative frequiency so can see how many words cover 50% and 90% of word occurrences.
+We see that in our samples some words are used far more often than most of the other words. Since this is the case we will see how many words we would need to have to cover 50% of all words and 90% of all words.
 ```{r, echo=FALSE}
 coverageNums <- function( df, percent) {
     val <- tail(df$cum_count, 1)
@@ -93,44 +94,171 @@ coverageNums <- function( df, percent) {
 ```{r}
 coverage_df <- coverageNums(t_df, .5) %>% rbind(coverageNums(b_df, .5)) %>% rbind(coverageNums(n_df, .5)) %>% 
     rbind(coverageNums(t_df, .9)) %>% rbind(coverageNums(b_df, .9)) %>%rbind(coverageNums(n_df, .9))
-
 coverage_df
+```
+We see that with only about 3% of the most common words we can cover 50% of all word occurences, and with about 34% we can cover 90% of all word occurences. We can use this information if we find out in testing the final application that we are not meeting our performance targets and cannot use 100% of all the words in our final model.
 
+Top 10 most common words for tweets, blogs, and news articles.
+```{r}
+data.frame(twitter = t_df$word[1:10], blogs = b_df$word[1:10], news = n_df$word[1:10])
+```
+We can see from this small list that the most common words appear to differ some between tweets, blogs, and news articles. This indicates that we may want to use different dictionaries for depending on the what context we are trying to predict the next word.
+
+### N-grams
+For predicion purposes we would like to use bigrams (composed of two words) and trigrams (composed of 3 words) since this allows the use of more information in predicting the next word compared to using on ony a single word. We will create the bigrams after cleaning the words. In this case we will pass sentences to the n-gram creating function (from the RWeka package) instead of a list of words otherwise, we will get word combinations that cross sentences and tweets.
+
+First, clean the lines of text.
+```{r, cache=TRUE}
+suppressMessages(library(RWeka))
+
+t_cln <- sapply(t_samp, cleanText, TRUE)
+b_cln <- sapply(b_samp, cleanText, TRUE)
+n_cln <- sapply(n_samp, cleanText, TRUE)
+```
+Create the bigrams.
+```{r, cache=TRUE}
+t_bi <- NGramTokenizer(t_cln, control=Weka_control(min=2, max=2, dilimeters = " ")) %>% createTableOfCounts("twitter")
+b_bi <- NGramTokenizer(b_cln, control=Weka_control(min=2, max=2, dilimeters = " ")) %>% createTableOfCounts("blogs")
+n_bi <- NGramTokenizer(n_cln, control=Weka_control(min=2, max=2, dilimeters = " ")) %>% createTableOfCounts("news")
+```
+Create the trigrams.
+```{r, cache=TRUE}
+t_tri <- NGramTokenizer(t_cln, control=Weka_control(min=3, max=3, dilimeters = " ")) %>% createTableOfCounts("twitter")
+b_tri <- NGramTokenizer(b_cln, control=Weka_control(min=3, max=3, dilimeters = " ")) %>% createTableOfCounts("blogs")
+n_tri <- NGramTokenizer(n_cln, control=Weka_control(min=3, max=3, dilimeters = " ")) %>% createTableOfCounts("news")
+```
+Now we look at the numbers of unique bigrams and trigrams along with their distributions for the three files.
+```{r}
+rbind(data.frame(measure = "Number unique bigrams",twitter = dim(t_bi)[1], blogs = dim(b_bi)[1], news = dim(n_bi)[1]),
+      data.frame(measure = "Number unique trigrams",twitter = dim(t_tri)[1], blogs = dim(b_tri)[1], news = dim(n_tri)[1])  )
+```
+We see that when we move from single words to bigrams and digrams our unique counts go way up, with five to six times as many unique instances for bigrams and trigrams.
+```{r, fig.height=3, fig.width=7}
+bi_df <- rbind(t_bi[1:500], b_bi[1:500], n_bi[1:500])
+ggplot(bi_df, aes(x=index, y=count)) + geom_line() + facet_grid(. ~ src)
+```
+```{r, fig.height=3, fig.width=7}
+tri_df <- rbind(t_tri[1:500], b_tri[1:500], n_tri[1:500])
+ggplot(tri_df, aes(x=index, y=count)) + geom_line() + facet_grid(. ~ src)
 ```
 
-```{r, cache=TRUE, echo=FALSE}
-# own n_gram creator given a vector sentences
-createNGram <- function(inSentence, ngramNum = 2) {
-    x <- unlist(strsplit(inSentence, " "))
-    y <- paste(x[seq(from=1, to=length(x) - 1, by=1)], x[seq(from=2, to=length(x), by=1)], sep = " ")
-}
-
-#x <- c("A first line to parse", "A second line to parse", "Yet another something to work #2 with!!")
-#y <- lapply(x, createNGram)
-#y <- sapply(x, createNGram)   # will create vector of NGrams if x is a vectoy
-z <- sapply(t_samp, cleanText, TRUE)
-#z <- sapply(t_samp, cleanText) %>% sapply(createNGram) %>% unlist  # create vector of NGrams
-
-#crp <- VCorpus(VectorSource(t_clean), readerControl = list(language="english"))
-suppressMessages(library(RWeka))
-bigram_rw <- NGramTokenizer(z, control=Weka_control(min=2, max=2, dilimeters = " "))
-t_bi <- createTableOfCounts(bigram_rw, "twitter")
-b_bi <- sapply(b_samp, cleanText, TRUE) %>%
-    NGramTokenizer(control=Weka_control(min=2, max=2, dilimeters = " ")) %>%
-    createTableOfCounts("blogs")
-n_bi <- sapply(n_samp, cleanText, TRUE) %>%
-    NGramTokenizer(control=Weka_control(min=2, max=2, dilimeters = " ")) %>%
-    createTableOfCounts("news")
-
-# Graph distro
-bi_df <- rbind(t_bi[1:500], b_bi[1:500], n_bi[1:500])
-
-ggplot(bi_df, aes(x=index, y=count)) + geom_line() + facet_grid(. ~ src)
-
+Like single words, bigrams and trigrams have a few instances that are much more common. However, as we move from single words to bigrams to trigrams we see that the counts for the most common instances in the text drop. This may impact our ability to use a small subset of bigrams and trigrams in our dictionary. We will see if we can achieve similar coverage with bigrams and trigrams as we did with single words.
+```{r}
 coverage_bi <- coverageNums(t_bi, .5) %>% rbind(coverageNums(b_bi, .5)) %>% rbind(coverageNums(n_bi, .5)) %>% 
     rbind(coverageNums(t_bi, .9)) %>% rbind(coverageNums(b_bi, .9)) %>%rbind(coverageNums(n_bi, .9))
 
 coverage_bi
-# from tau library
-#bigrams <- textcnt(z, method="string", n=2L)
+```
+```{r}
+coverage_tri <- coverageNums(t_tri, .5) %>% rbind(coverageNums(b_tri, .5)) %>% rbind(coverageNums(n_tri, .5)) %>% 
+    rbind(coverageNums(t_tri, .9)) %>% rbind(coverageNums(b_tri, .9)) %>%rbind(coverageNums(n_tri, .9))
+
+coverage_tri
+```
+We see that unlike with words, it does not appear a few bigrams or trigrams can provide significant coverage.
+
+## Application Plans
+The goal of our application will be to predict the next word given a partial string of words. 
+
+1. Create a separate word table for tweets, blogs, and news articles so we use the associated table depending on the application and context.
+2. Create bigram and trigram tables for each set of data to use when predicting the next word. 
+3. Reduce table sizes to work within constraints of Shiny server through a combination of selecting the most common combinations and through methods such as markov chains and word compression.
+4. Explore offloading less common combinations to a persistent store that can be accessed from the Shiny application.
+5. Train a model at test model.
+6. For application, clean entered data before matching with model.
+5. If can get the current user application then use the correpsonding twitter, blogs, or news dataset that is best match for the application.
+  
+<br>
+<br>
+
+<hr> 
+## Supplemental Information
+The following packages are used in generating this report
+```{r, eval=FALSE}
+library(tau)
+suppressMessages(library(ggplot2))
+suppressMessages(library(magrittr))
+suppressMessages(library(tm))
+suppressMessages(library(SnowballC))
+suppressMessages(library(dplyr))
+suppressMessages(library(data.table))
+suppressMessages(library(RWeka))
+```
+### Obtaining the data
+The data for this project can be obtained from <https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip>
+```{r, eval=FALSE}
+if (!file.exists("data/")) {
+    dir.create("data")
+}
+# If the zip file does not exist then download the file.
+if (!file.exists("data/data.zip")) {
+    download.file("https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip", "data/data.zip", method = "curl") 
+}
+# Check to see if the data/en_US directory exists. If not, extract the files.
+if (!file.exists("data/en_US")) {
+    unzip("data/data.zip", exdir = "data")
+}
+```
+
+
+### Selecting Samples
+Due to limited hardware for this stage a binomial sample of 1% of lines from each corpus was selected.
+```{r, eval=FALSE}
+createSampleFile <- function(inFile, outFile, percent = .01) {
+  con <- file(inFile,"r")
+  fullFile <- readLines(con)
+  close(con)
+  
+  to_select <- rbinom(n = length(fullFile), size = 1, prob = percent)
+  to_select <- to_select > 0
+  file_subset <- fullFile[to_select]
+  
+  # Write out the sample file can free space
+  outCon <- file(outFile, "w")
+  writeLines(file_subset, con = outCon)
+  close(outCon)
+}
+
+set.seed(10)
+createSampleFile("data/en_US/en_US.twitter.txt", "data/sample/twit_samp.txt")
+createSampleFile("data/en_US/en_US.blogs.txt", "data/sample/blog_samp.txt")
+createSampleFile("data/en_US/en_US.news.txt", "data/sample/news_samp.txt")
+gc()
+```
+
+### Cleaning the data
+For this report a `cleanText` function was created to clean the data for further processing. The function converts the text to lower case, removes punctuation, non-alpha characters (which handles unicode), removes stopwords (extremely common words), and stems the words (removes endings such as *ing*)
+```{r, eval=FALSE}
+cleanText <- function(data, split=TRUE) {
+    data <- unlist(strsplit(data, split=" "))    %>% 
+        tolower                                  %>% 
+        remove_stopwords(stopwords())            %>%
+        function (x) gsub("[[:punct:]]", " ", x) %>%
+        function (x) gsub("[^a-z]", " ", x)      %>%
+        function (x) gsub("[ ]{2}", " ", x)      %>%
+        function (x) x[ x != " "]                %>%
+        wordStem
+    if (split) {
+        data <- unlist(strsplit(data, split = " "))
+    } else {
+        data <- paste(data, collapse = " ")
+    }
+    data
+}
+```
+### Gathering counts
+To gather counts the `createTableOfCounts` function was used which counted the number occurences of each unique instance and ordered them in decending frequency order.
+```{r, eval=FALSE}
+createTableOfCounts <- function(x, id="default") {
+    wrds <- table(x)
+    df <- data.table(word = names(wrds), count = as.numeric(wrds)) %>%
+        mutate(src = id) %>%
+        arrange(desc(count)) %>%
+        mutate(index = seq_len(length(count)), cum_count = cumsum(count))
+}
+```
+### Session information
+This report can be regenerated using the following environment:
+```{r}
+sessionInfo()
 ```
