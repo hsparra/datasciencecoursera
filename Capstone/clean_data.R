@@ -9,10 +9,11 @@ suppressMessages(library(dplyr))
 suppressMessages(library(data.table))
 
 splitFile<- function(inFile, outLocation, outPrefix, folds = 10) {
-    #con <- file(inFile,"r")
-    #f_file <- readLines(con)
-    #close(con)
-    f_file <- fread(inFile, sep="\n", header=FALSE)
+    con <- file(inFile,"r")
+    f_file <- readLines(con)
+    close(con)
+    #inFile <- paste("sed 's/\\0\\0//g'", inFile, sep=" ")
+    #f_file <- fread(inFile, sep="\n", header=FALSE)
     print("create folds")
     #f_file <- readLines(inFile, "r")
     sets <- createFolds(1:length(f_file), k = folds)
@@ -31,6 +32,9 @@ library(caret)
 set.seed(2014)
 
 splitFile("en_US/en_US.twitter.txt", "data/split/", "twitter", 10)
+splitFile("en_US/en_US.blogs.txt", "data/split/", "blogs", 10)
+splitFile("en_US/en_US.news.txt", "data/split/", "news", 10)
+
 
 cleanText <- function(data, split=FALSE) {
     data <- unlist(strsplit(data, split=" "))
@@ -53,32 +57,56 @@ cleanText <- function(data, split=FALSE) {
     data
 }
 
-cleanFiles <- function (inFile, outFile, step=100) {
+cleanFiles <- function (inFile, outFile, step=100, progressCount = 10000) {
     #con <- file(inFile,"r")
     data <- fread(inFile, sep="\n", header=FALSE)
     end <- length(data$V1)
-    cat("the number of lines is ", end, "\n")
+    cat("the number of lines in", outFile, "is ", end, "\n")
     conOut <- file(outFile, "w")
     
     i <- 1
     j <- 1
+    msg_cnt <- 1
     while (j < end) {
         j <- i + step
         if (j > end) { j <- end }
         cleaned <- sapply(data$V1[i:j], cleanText, TRUE)
         cleaned <- cleaned[cleaned != ""]
         writeLines(cleaned, con=conOut)
-        i <- i + step + 1       
+        i <- i + step + 1
+        msg_cnt <- msg_cnt + step
+        #cat("msg_cnt = ", msg_cnt, "   progressCount = ", progressCount, "\n")
+        if (msg_cnt >= progressCount) {
+            cat(j, " lines have been processed -", date(),"\n")
+            msg_cnt <- 1
+        }
     }
     close(conOut)
 }
 
 cleanFiles("data/split/twitter_1.txt", "data/cleaned/twitter_1_clean.txt") # ~500 sec.
 
-for (f in list.files("data/split/", pattern = "blogs", full.names = FALSE)) {
+for (f in list.files("data/split/", pattern = "twitter", full.names = FALSE)) {
     cat(date(), "- Cleaning file", f, "\n")
     outF <- gsub(".txt", "_clean.txt", f)
-    cleanFiles(paste("data/split/", f, sep=""), paste("data/clean/", outF, sep="") )
+    cleanFiles(paste("data/split/", f, sep=""), paste("data/cleaned/", outF, sep="") )
+}
+
+# If can do multicore and have plenty of memory
+library(parallel)
+numCores <- 5       # Number of cores you want to use
+for (f in list.files("data/split/", pattern = "twitter", full.names = FALSE)) {
+    if (grepl("twitter_1.txt", f)) { next }
+    
+    cat(date(), "- Cleaning file", f, "\n")
+    outF <- paste("data/cleaned/", gsub(".txt", "_clean.txt", f), sep="")
+    
+    data <- fread(paste("data/split/", f, sep=""), sep="\n", header=FALSE)
+    cln <- unlist(mclapply(f, cleanText, TRUE, mc.cores=getOption("mc.cores", numCores)))
+    
+    conOut <- file(outF, "w")
+    write(cln, out)
+    close(con)
 }
 
 #cleanFiles("en_us/en_US.blogs.txt", "data/cleaned/blog_clean.txt")
@@ -117,24 +145,39 @@ createNGrams <- function (inFile, outFile, nGramType=2, step=100, progressCount=
         }
     }
     close(conOut)
+    cat("All", j, "lines have been processed", "\n")
 }
 
 library(RWeka)
-#d <- fread("data/cleaned/twitter_1_clean.txt", sep="\n", header=FALSE)
-#bigrams <- NGramTokenizer(d, control=Weka_control(min=2, max=2, dilimeters = " "))
-#rm(d)
-#writeLines(bigrams, "data/tables/bigrams_twit_1.txt")
-createNGrams("data/cleaned/twitter_2_clean.txt", "data/temp/bi_twit_2.txt", nGramType = 2,progressCount = 10000)
-bigrams <- fread("data/temp/bi_twit_2.txt", sep="\n", header=TRUE)
-bi_table2 <- createTableOfCounts(bigrams, "twitter")
-write.table(bi_table2, "data/tables/t_bigram_twit_2.txt")
+
+processCleanedFile <- function (inFile, outFile, identifier="none", nGramType=2, progressCount=10000) {
+    nGramFile <- paste("data/temp/", outFile, ".txt", sep="")
+    createNGrams(inFile, nGramFile, nGramType=2, progressCount)
+    grams <- fread(nGramFile, sep="\n", header=FALSE)
+    table <- createTableOfCounts(grams, identifier)
+    tableFile <-paste("data/tables/t_", outFile, ".txt", sep="")
+    write.table(table, tableFile)
+    tableObj <- paste("data/tables/t_", outFile, ".RData", sep="")
+    save(table, file=tableObj)
+}
+
+for (f in list.files("data/cleaned/", pattern = "twitter", full.names = data)) {
+    cat(date(), "- Processing file", f, "\n")
+    outF <- strsplit(f, "/") %>% function(x) x[length(x)] %>%  gsub(".txt", "_clean.txt", x)
+    #cleanFiles(paste("data/split/", f, sep=""), paste("data/clean/", outF, sep="") )
+}
+
+createNGrams("data/cleaned/twitter_1_clean.txt", "data/temp/bi_twit_1.txt", nGramType = 2,progressCount = 10000)
+bigrams <- fread("data/temp/bi_twit_1.txt", sep="\n", header=FALSE)
+bi_table <- createTableOfCounts(bigrams, "twitter")
+write.table(bi_table, "data/tables/t_bigram_twit_1.txt")
 save(bi_table, file="data/tables/t_bi_twit_1.RData")  # save as an R object
 rm(bigrams)
 
-trigrams <- fread("data/temp/tri_twit_1.txt", sep="\n", header=TRUE)
+trigrams <- fread("data/temp/tri_twit_1.txt", sep="\n", header=FALSE)
 tri_table2 <- createTableOfCounts(trigrams, "twitter")
-save(tri_table2, file="data/tables/t_tri_twit_2.RDdata")
-write.table(tri_table2, "data/tables/t_trigram_twit_2.txt")
+save(tri_table2, file="data/tables/t_tri_twit_`.RDdata")
+write.table(tri_table2, "data/tables/t_trigram_twit_1.txt")
 rm(trigrams)
 
 gc()
