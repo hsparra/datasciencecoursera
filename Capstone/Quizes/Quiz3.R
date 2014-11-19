@@ -135,7 +135,6 @@ findBestMatches <- function(str, possibles = c("")) {
 }
 
 decodeTopMatches <- function(matches, dict, n=3) {
-    cat("number of matches found", length(matches), "\n")   ## TEST
     if (length(matches) < n) {
         n <- length(matches)
     }
@@ -149,15 +148,13 @@ decodeTopMatches <- function(matches, dict, n=3) {
 
 findMatches <- function(str, t, dict, n=3) {
     
-    l <- matches <- findAllMatches(str, t, dict, n)
-    # decode values
+    l <- findAllMatches(str, t, dict, n)
     l[[1]]
 }
 
 findAllMatches <- function(str, t, dict, n=3) {
     x <- cleanText(str)
     key <- match(x[length(x)], dict)
-    cat("matching on key:", key, "\n")
     if (!is.na(key)) {
         matches <- t[w1 == key]
         matches <- matches[order(-count)]
@@ -178,7 +175,7 @@ runTest <- function() {
     pos <- c("die", "eat", "sleep", "give")
     print("Q1. - should get -->  die  <--")
     findBestMatches(str, pos)
-    findMatches(str, twit_1)
+    findMatches(str, dict, twit_1)
     
 
     str <- "Guy at my table's wife got up to go to the bathroom and I asked about dessert and he started telling me about his"
