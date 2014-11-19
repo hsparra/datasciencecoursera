@@ -167,42 +167,25 @@ for (f in list.files("data/cleaned/", pattern = "twitter", full.names = data)) {
     #cleanFiles(paste("data/split/", f, sep=""), paste("data/clean/", outF, sep="") )
 }
 
-createMatchTable <- function(ws, dict, t) {
-    i <- 1
-    msgs <- 1
-    tbl <- data.table()
-    for (w in ws) {
-        wrds <- strsplit(w, split= " ") %>% unlist
-        l <- list()
-        for (j in wrds) {
-            l <- append(l, dict[j, id])
-        }
-        l <- append(l, t$count[i])
-        tbl <- rbind(tbl, l, use.names=FALSE)
-        i <- i + 1
-        msgs <- msgs + 1
-        if (msgs > 5000) {
-            print("  - 5000 more processed")
-            msgs <- 1
-        }
-    }
-    tbl
+createMatchTable <- function(t, dict) {
+    require(qdap)
+    t$word <- mgsub(dict$word, dict$id, t$word)
+    t
+}
+
+createDictionary <- function(t) {
+    wrds <- strsplit(t$word, split =" ") %>% unlist %>% unique 
+    dict <- data.table(id = seq_len(length(wrds)), word = wrds)
 }
 
 compressTable <- function(t, wordsInKey = 2) {
-    #t[, src := NULL][, index := NULL][, cum_count := NULL]
-    wrds <- strsplit(t$word, split =" ") %>% unlist %>% unique 
-    cat("Have unique words", length(wrds), "\n")
-    dict <- data.table(id = seq_len(length(wrds)), word = wrds)
+    dict <- createDictionary(t)
     cat("created dictionary\n")
     setkey(dict, word)
-    tbl <- createMatchTable(t$word, dict, t)
-    tbl
+    tbl <- createMatchTable(t[,.(word, count)], dict)
+    ret <- list(lookup = dict, table = tbl)
 }
-# to use compress table results
-# q <- quote(list(col1, col2))
-# results <- t[eval(q)]
-# or t[V1 == "value"]
+
 
 createNGrams("data/cleaned/twitter_1_clean.txt", "data/temp/bi_twit_1.txt", nGramType = 2,progressCount = 10000)
 bigrams <- fread("data/temp/bi_twit_1.txt", sep="\n", header=FALSE)
