@@ -9,6 +9,26 @@ library(tau)
 
 ### NOTE: Look at testing for other words, not just the last
 ###       Merge tables
+cleanText <- function(data, split=FALSE) {
+    data <- unlist(strsplit(data, split=" "))
+    data <- tolower(data)
+    data <- remove_stopwords(data, stopwords())
+    #data <- gsub("[[:punct:]]", " ", data)
+    data <- gsub("[^a-z]", " ", data)
+    #data <- gsub("[ ]{2}", " ", data)
+    data <- data[ data != " "]
+    data <- wordStem(data)
+    data <- data[data != ""]
+    if (split) {
+        data <- paste(data, collapse = " ")
+    } else {
+        data <- unlist(strsplit(data, split = " ")) %>%
+            function (x) x[ x != ""]
+    }
+    data <- gsub("[ ]{2,}", " ", data)
+    data <- gsub("^[ ]+", "", data)
+    data
+}
 
 createRegex <- function(str, level=1) {
     if (debug) {
@@ -114,6 +134,38 @@ findBestMatches <- function(str, possibles = c("")) {
     #return(y)
 }
 
+decodeTopMatches <- function(matches, dict, n=3) {
+    cat("number of matches found", length(matches), "\n")   ## TEST
+    if (length(matches) < n) {
+        n <- length(matches)
+    }
+    top <- character(0)
+    for (i in 1:n) {
+#         cat("looking for decode of:", matches[i], "  which =", dict[matches[i]], "\n")   # TEST
+        top <- append(top, dict[matches[i]])
+    }
+    top
+}
+
+findMatches <- function(str, t, dict, n=3) {
+    
+    l <- matches <- findAllMatches(str, t, dict, n)
+    # decode values
+    l[[1]]
+}
+
+findAllMatches <- function(str, t, dict, n=3) {
+    x <- cleanText(str)
+    key <- match(x[length(x)], dict)
+    cat("matching on key:", key, "\n")
+    if (!is.na(key)) {
+        matches <- t[w1 == key]
+        matches <- matches[order(-count)]
+    }
+    # decode values
+    list(decodeTopMatches(matches$w2, dict, n), matches)
+}
+
 debug <- FALSE
 debug2 <- FALSE
 load("data/tables/t_bi_twit_1.RData")
@@ -126,6 +178,8 @@ runTest <- function() {
     pos <- c("die", "eat", "sleep", "give")
     print("Q1. - should get -->  die  <--")
     findBestMatches(str, pos)
+    findMatches(str, twit_1)
+    
 
     str <- "Guy at my table's wife got up to go to the bathroom and I asked about dessert and he started telling me about his"
     pos <- c("horitcultural", "financial", "marital", "spiritual")
