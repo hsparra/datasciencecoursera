@@ -1,5 +1,12 @@
 require(data.table)
 
+cleanTextForMatch <- function(str) {
+    str <- tolower(str) %>%
+    str <- gsub("[^a-z]", " ", str)
+    str <- gsub("[ ]{2,}", " ", str)
+    str <- gsub("^[ ]+", "", str)
+}
+
 decodeTopMatches <- function(matches, dict, n=3) {
     if (length(matches) < n) {
         n <- length(matches)
