@@ -84,7 +84,15 @@ cleanFiles <- function (inFile, outFile, step=100, progressCount = 10000) {
     close(conOut)
 }
 
-cleanFiles("data/split/twitter_2.txt", "data/cleaned/twitter_2_clean.txt") # ~500 sec.
+cleanFile <- function(f, step=100, progressCount=10000) {
+    #f <- paste("/data/split/", f, sep="")
+    f <- gsub("//", "/", f)
+    outF <- paste("data/cleaned/",  strsplit(f, split="/") %>% unlist %>% last, sep="") %>% 
+        function(x) gsub(".txt", "_clean.txt", x)
+    cleanFiles(f, outF, step, progressCount)
+}
+
+files <- list.files("data/split/", pattern="_[12].txt", full.names = TRUE)
 
 for (f in list.files("data/split/", pattern = "twitter", full.names = FALSE)) {
     cat(date(), "- Cleaning file", f, "\n")
