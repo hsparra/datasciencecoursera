@@ -125,11 +125,14 @@ createTableOfCounts <- function(x, id="default") {
         mutate(index = seq_len(length(count)), cum_count = cumsum(count))
 }
 
-createNGrams <- function (inFile, outFile, nGramType=2, step=100, progressCount=100000) {
+
+
+createNGrams <- function (inFile, outFile, nGramType=2, step=100, progressCount=10000) {
     #con <- file(inFile,"r")
     d <- fread(inFile, sep="\n", header=FALSE)
     end <- length(d$V1)
-    cat("the number of lines is ", end, "\n")
+    cat("the number of lines for file", inFile, "is ", end, "\n")
+    cat("out file will be", outFile, "\n")
     conOut <- file(outFile, "w")
     
     i <- 1
@@ -142,9 +145,9 @@ createNGrams <- function (inFile, outFile, nGramType=2, step=100, progressCount=
         writeLines(grams, con=conOut)
         i <- i + step + 1
         msg_cnt <- msg_cnt + step
-        #cat("msg_cnt = ", msg_cnt, "   progressCount = ", progressCount, "\n")
+#         cat("msg_cnt = ", msg_cnt, "   progressCount = ", progressCount, "\n")
         if (msg_cnt >= progressCount) {
-            cat(j, " lines have been processed", "\n")
+            cat(j, "  lines have been processed", "\n")
             msg_cnt <- 1
         }
     }
@@ -192,6 +195,17 @@ compressTable <- function(t) {
     tbl <- data.table(w1 = V1, w2 = V2, count = t$count)
     l <- list(tbl, dict)
 }
+
+createNGramsFromVector <- function(v, nGramType=2, progressCount=10000) {
+    v <- gsub("//", "/", v)
+    outF <- paste("data/ngrams/",  strsplit(v, split="/") %>% unlist %>% last, sep="") %>% 
+        function(x) gsub("clean", paste(nGramType, "gram", sep=""), x)
+    createNGrams(v, outF, nGramType, progressCount)
+}
+
+inF <- c("data/cleaned/blogs_1_clean.txt")
+inF <- list.files("data/cleaned/", full.names = TRUE)
+sapply(inF, createNGramsFromVector, nGramType=2)
 
 
 createNGrams("data/cleaned/twitter_1_clean.txt", "data/temp/bi_twit_1.txt", nGramType = 2,progressCount = 10000)
