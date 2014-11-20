@@ -84,7 +84,7 @@ cleanFiles <- function (inFile, outFile, step=100, progressCount = 10000) {
     close(conOut)
 }
 
-cleanFiles("data/split/twitter_1.txt", "data/cleaned/twitter_1_clean.txt") # ~500 sec.
+cleanFiles("data/split/twitter_2.txt", "data/cleaned/twitter_2_clean.txt") # ~500 sec.
 
 for (f in list.files("data/split/", pattern = "twitter", full.names = FALSE)) {
     cat(date(), "- Cleaning file", f, "\n")
@@ -179,15 +179,6 @@ createDictionary <- function(t) {
     dict <- data.table(id = seq_len(length(wrds)), word = wrds)
 }
 
-
-compressTable3 <- function(t, wordsInKey = 2, step=1000, progressCount=10000) {
-    dict <- createDictionary(t)
-    cat("created dictionary\n")
-    setkey(dict, word)
-    tbl <- createMatchTable(t[,.(word, count)], dict)    
-    list(lookup = dict, table = tbl)
-}
-
 compressTable <- function(t) {
     wrds <- strsplit(t$word, split=" ") %>% unlist
     dict <- unique(wrds)
@@ -196,33 +187,6 @@ compressTable <- function(t) {
     V2 <- match(m[,2], dict)
     tbl <- data.table(w1 = V1, w2 = V2, count = t$count)
     l <- list(tbl, dict)
-}
-
-
-compressTable2 <- function(t, wordsInKey = 2, step=1000, progressCount=10000) {
-    dict <- createDictionary(t)
-    setkey(dict, word)
-    end <- length(t$word)
-    j <- i <- 1
-    msg_cnt <- 1
-    while (j < end) {
-        j <- i + step
-        if (j > end) { j <- end }
-        if (i == 1) {
-            tbl <- createMatchTable(t[i:j,.(word, count)], dict)
-        } else {
-            tbl <- rbind(tbl, createMatchTable(t[i:j,.(word, count)], dict))
-        }
-        i <- i + step + 1
-        msg_cnt <- msg_cnt + step
-        #cat("msg_cnt = ", msg_cnt, "   progressCount = ", progressCount, "\n")
-        if (msg_cnt >= progressCount) {
-            cat(j, " lines have been processed", date(),"\n")
-            msg_cnt <- 1
-        }
-    }
-    
-    list(lookup = dict, table = tbl)
 }
 
 
