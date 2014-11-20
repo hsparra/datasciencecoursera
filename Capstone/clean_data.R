@@ -39,9 +39,10 @@ splitFile("en_US/en_US.news.txt", "data/split/", "news", 10)
 cleanText <- function(data, split=FALSE) {
     data <- unlist(strsplit(data, split=" "))
     data <- tolower(data)
-    data <- remove_stopwords(data, stopwords())
-    #data <- gsub("[[:punct:]]", " ", data)
+    data <- gsub("[[:punct:]]", " ", data)
     data <- gsub("[^a-z]", " ", data)
+    data <- gsub("^[ ]+", "", data)
+    data <- remove_stopwords(data, stopwords())
     #data <- gsub("[ ]{2}", " ", data)
     data <- data[ data != " "]
 #    data <- wordStem(data)
