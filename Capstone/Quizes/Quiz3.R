@@ -175,7 +175,7 @@ runTest <- function() {
     pos <- c("die", "eat", "sleep", "give")
     print("Q1. - should get -->  die  <--")
     findBestMatches(str, pos)
-    findMatches(str, dict, twit_1)
+    findMatches(str, bi_t_c, dict)
     
 
     str <- "Guy at my table's wife got up to go to the bathroom and I asked about dessert and he started telling me about his"

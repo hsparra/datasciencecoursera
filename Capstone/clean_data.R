@@ -1,7 +1,7 @@
 library(doMC)
 registerDoMC(2)
 library(tau)
-suppressMessages(library(ggplot2))
+# suppressMessages(library(ggplot2))
 suppressMessages(library(magrittr))
 suppressMessages(library(tm))
 suppressMessages(library(SnowballC))
@@ -44,7 +44,7 @@ cleanText <- function(data, split=FALSE) {
     data <- gsub("[^a-z]", " ", data)
     #data <- gsub("[ ]{2}", " ", data)
     data <- data[ data != " "]
-    data <- wordStem(data)
+#    data <- wordStem(data)
     data <- data[data != ""]
     if (split) {
         data <- paste(data, collapse = " ")
