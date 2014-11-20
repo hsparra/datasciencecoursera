@@ -92,12 +92,7 @@ cleanFile <- function(f, step=100, progressCount=10000) {
 }
 
 files <- list.files("data/split/", pattern="_[12].txt", full.names = TRUE)
-
-for (f in list.files("data/split/", pattern = "twitter", full.names = FALSE)) {
-    cat(date(), "- Cleaning file", f, "\n")
-    outF <- gsub(".txt", "_clean.txt", f)
-    cleanFiles(paste("data/split/", f, sep=""), paste("data/cleaned/", outF, sep="") )
-}
+sapply(files, cleanFile)
 
 # If can do multicore and have plenty of memory
 library(parallel)
