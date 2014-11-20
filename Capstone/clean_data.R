@@ -112,10 +112,14 @@ for (f in list.files("data/split/", pattern = "twitter", full.names = FALSE)) {
 #cleanFiles("en_us/en_US.blogs.txt", "data/cleaned/blog_clean.txt")
 #cleanFiles("en_us/en_US.news.txt", "data/cleaned/news_clean.txt")
 
+createTableOfFrequencies <- function(x) {
+    wrds <- table(x)
+    data.table(word = names(wrds), count = as.numeric(wrds))
+}
 
 createTableOfCounts <- function(x, id="default") {
-    wrds <- table(x)
-    df <- data.table(word = names(wrds), count = as.numeric(wrds)) %>%
+    
+    df <- createTableOfFrequencies(x) %>%
         mutate(src = id) %>%
         arrange(desc(count)) %>%
         mutate(index = seq_len(length(count)), cum_count = cumsum(count))
