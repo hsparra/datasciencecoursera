@@ -1,7 +1,8 @@
 require(data.table)
 
 cleanTextForMatch <- function(str) {
-    str <- tolower(str) %>%
+    str <- tolower(str)
+    str <- <- remove_stopwords(str, stopwords())
     str <- gsub("[^a-z]", " ", str)
     str <- gsub("[ ]{2,}", " ", str)
     str <- gsub("^[ ]+", "", str)
