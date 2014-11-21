@@ -115,8 +115,11 @@ for (f in list.files("data/split/", pattern = "twitter", full.names = FALSE)) {
 #cleanFiles("en_us/en_US.news.txt", "data/cleaned/news_clean.txt")
 
 createTableOfFrequencies <- function(x) {
-    wrds <- table(x)
-    data.table(word = names(wrds), count = as.numeric(wrds))
+#     wrds <- table(x)
+#     data.table(word = names(wrds), count = as.numeric(wrds))
+    n <- names(x)
+    wrds <- unique(x[,count := .N, by=n], by=n)
+}
 }
 
 createTableOfCounts <- function(x, id="default") {
