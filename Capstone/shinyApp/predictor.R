@@ -1,11 +1,22 @@
 require(data.table)
+require(tm)
+require(tau)
+reguire(magrittr)
 
 cleanTextForMatch <- function(str) {
     str <- tolower(str)
-    str <- <- remove_stopwords(str, stopwords())
+    str <- gsub("[[:punct:]]", " ", str)
     str <- gsub("[^a-z]", " ", str)
+    str<- unlist(strsplit(str, split=" "))
+    str <- remove_stopwords(str, stopwords())
+    str <- str[ str != " "]
+    #    data <- wordStem(data)
+    str <- str[str != ""]
+    str <- unlist(strsplit(str, split = " ")) %>%
+        function (x) x[ x != ""]
     str <- gsub("[ ]{2,}", " ", str)
     str <- gsub("^[ ]+", "", str)
+    str
 }
 
 decodeTopMatches <- function(matches, dict, n=3) {

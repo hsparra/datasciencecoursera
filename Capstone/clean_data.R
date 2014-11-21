@@ -35,6 +35,12 @@ splitFile("en_US/en_US.twitter.txt", "data/split/", "twitter", 10)
 splitFile("en_US/en_US.blogs.txt", "data/split/", "blogs", 10)
 splitFile("en_US/en_US.news.txt", "data/split/", "news", 10)
 
+# Create another file path for output based upon a given file
+createFilePath <- function(inPath, outPath, outSuffix) {
+    outF <- paste(outPath,  strsplit(inPath, split="/") %>% unlist %>% last, sep="") %>% 
+        function(x) gsub(".txt", outSuffix, x)
+    outF
+}
 
 cleanText <- function(data, split=FALSE) {
     data <- tolower(data)
@@ -91,7 +97,9 @@ cleanFile <- function(f, step=100, progressCount=10000) {
     cleanFiles(f, outF, step, progressCount)
 }
 
-files <- list.files("data/split/", pattern="_[12].txt", full.names = TRUE)
+
+## CLEAN FILES
+files <- list.files("data/split/", pattern="_[34].txt", full.names = TRUE)
 sapply(files, cleanFile)
 
 # If can do multicore and have plenty of memory
@@ -121,17 +129,20 @@ createTableOfFrequencies <- function(x) {
     wrds <- unique(x[,count := .N, by=n], by=n)
 }
 
-combineCountTables <- function (t1, t2) {
+combineCountTables <- function (t1, t2=data.table()) {
+    if (dim(t2)[1] == 0) { return(t1)}
     m_cols <- names(t1) %>% function(x) x[1:(length(x) -1)]
     t <- merge(t1, t2, by=m_cols, all = TRUE)
     t[is.na(t)] <- 0
-    n <- names(t) %>% function(x) x[(length(x)/2 + 1):length(x)] %>% paste(collapse="+")
-    cat("names =", names(t), ",  and n =", n, "\n")   # TEST
-    t_l <- eval(parse(text=paste("t[, count :=", n, "]")))
+#     n <- names(t) %>% function(x) x[(length(m_cols) + 1):length(x)] %>% paste(collapse="+")
+#     cat("names =", names(t), ",  and n =", n, "\n")   # TEST
+#     t_l <- eval(parse(text=paste("t[, count :=", n, "]")))  # use dynamically created count formula
+    t_l <- t[, count := count.x + count.y]
     t_l <- t_l[,c(1:length(m_cols), dim(t_l)[2]), with=FALSE]
     t_l
 }
 
+#Deprecated
 createTableOfCounts <- function(x, id="default") {
     
     df <- createTableOfFrequencies(x) %>%
@@ -189,6 +200,7 @@ for (f in list.files("data/cleaned/", pattern = "twitter", full.names = data)) {
     #cleanFiles(paste("data/split/", f, sep=""), paste("data/clean/", outF, sep="") )
 }
 
+# Deprecated
 createMatchTable <- function(t, dict) {
     require(qdap)
     setkey(t, word)
@@ -196,6 +208,7 @@ createMatchTable <- function(t, dict) {
     t
 }
 
+# Deprecated
 createDictionary <- function(t) {
     wrds <- strsplit(t$word, split =" ") %>% unlist %>% unique 
     dict <- data.table(id = seq_len(length(wrds)), word = wrds)
@@ -211,6 +224,15 @@ compressTable <- function(t) {
     l <- list(tbl, dict)
 }
 
+compressTableWithWordMapping <- function(t, w) {
+    n <- names(t)
+    n <- n[1:(length(n)-1)]
+    tOut <-t[,(n):= lapply(.SD, match, w), .SDcols=n]
+}
+
+
+
+
 createNGramsFromVector <- function(v, nGramType=2, progressCount=10000) {
     v <- gsub("//", "/", v)
     outF <- paste("data/ngrams/",  strsplit(v, split="/") %>% unlist %>% last, sep="") %>% 
@@ -218,9 +240,16 @@ createNGramsFromVector <- function(v, nGramType=2, progressCount=10000) {
     createNGrams(v, outF, nGramType, progressCount)
 }
 
+
+
+
+### CREATE NGRAMS
 inF <- c("data/cleaned/blogs_1_clean.txt")
-inF <- list.files("data/cleaned/", full.names = TRUE)
+inF <- list.files("data/cleaned/", pattern="_[34]_clean", full.names = TRUE)
 sapply(inF, createNGramsFromVector, nGramType=2)
+sapply(inF, createNGramsFromVector, nGramType=3)
+
+
 
 addToDecode <- function(dt, out=character(0)) {
     m <- as.matrix(dt)
@@ -235,6 +264,48 @@ addToDecode <- function(dt, out=character(0)) {
 
 files <- list.files("data/ngrams/", pattern="twitter_._2gram", full.names = TRUE)
 
+
+# Create Decode Table
+# Only need to process the bigram files since they already contain all the words
+files <- list.files("data/ngrams/", pattern="2gram.txt", full.names = TRUE)
+wrds <- character(0)
+for (f in files) {
+    dt <- fread(f, header=FALSE)
+    dt <- createMatchTable(dt)
+    wrds <- addToDecode(dt, wrds)
+}
+save(wrds, file="data/tables/words.txt")
+rm(dt)
+gc()
+# Create count tables and compress
+files <- list.files("data/ngrams/", full.names = TRUE)
+for (f in files) {
+    cat("Processing file:", f, "\n")
+    dt <- fread(f, header=FALSE)
+    dt <- createTableOfFrequencies(dt)
+    dt <- compressTableWithWordMapping(dt, wrds)
+    outF <- createFilePath(f, outPath = "data/tables/", outSuffix = ".RData")
+    varN <- paste(strsplit(f, split="/") %>% unlist %>% last, sep="") %>% 
+        function(x) gsub(".txt", "", x)
+    l <- list(varN = dt)
+    save(l, file=outF)
+}
+
+# create a combined table for matching
+files <- list.files("data/tables/", pattern="_1_3gram.RData", full.names=TRUE) 
+files <- list.files("data/tables/", pattern="_1_2gram.RData", full.names=TRUE) 
+
+outDt <- data.table()
+for (f in files) {
+    cat("Processing file:", f, "\n")
+    load(f)
+    dt <- l[[1]]
+    outDt <- combineCountTables(dt, outDt)
+}
+bigrams <- outDt
+save(bigrams, file="data/tables/bigrams_1.RData")
+# get eh counts for each
+cnts <- data.table(outDt$count)[,.N, keyby=outDt$count][, prcnt := N/sum(N)]
 
 createNGrams("data/cleaned/twitter_1_clean.txt", "data/temp/bi_twit_1.txt", nGramType = 2,progressCount = 10000)
 bigrams <- fread("data/temp/bi_twit_1.txt", sep="\n", header=FALSE)
