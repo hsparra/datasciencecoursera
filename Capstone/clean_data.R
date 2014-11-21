@@ -120,6 +120,16 @@ createTableOfFrequencies <- function(x) {
     n <- names(x)
     wrds <- unique(x[,count := .N, by=n], by=n)
 }
+
+combineCountTables <- function (t1, t2) {
+    m_cols <- names(t1) %>% function(x) x[1:(length(x) -1)]
+    t <- merge(t1, t2, by=m_cols, all = TRUE)
+    t[is.na(t)] <- 0
+    n <- names(t) %>% function(x) x[(length(x)/2 + 1):length(x)] %>% paste(collapse="+")
+    cat("names =", names(t), ",  and n =", n, "\n")   # TEST
+    t_l <- eval(parse(text=paste("t[, count :=", n, "]")))
+    t_l <- t_l[,c(1:length(m_cols), dim(t_l)[2]), with=FALSE]
+    t_l
 }
 
 createTableOfCounts <- function(x, id="default") {
