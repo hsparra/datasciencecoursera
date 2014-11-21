@@ -209,6 +209,23 @@ inF <- c("data/cleaned/blogs_1_clean.txt")
 inF <- list.files("data/cleaned/", full.names = TRUE)
 sapply(inF, createNGramsFromVector, nGramType=2)
 
+extractUniqueWords <- function(f, lvl=1) {
+    # get file
+    #f <- fread(f, header=FALSE)
+    # create vector of words basd on columns
+    #  need to find out to dynamically refrer to columns
+    
+    w1 <- unique(f$V1)
+    if (lvl == 1) { print("works")}
+    if (lvl <= 1)  { return(w1) } 
+    w1 <- append(w1, setdiff(f$V2, w1))
+    if (lvl == 2) { return(w1) }
+    w1 <- append(w1, setdiff(f$V3, w1))
+    if (lvl == 3) { return(w1) }
+    w1 <- append(w1, setdiff(f$V4, w1))
+    w1
+}
+
 
 createNGrams("data/cleaned/twitter_1_clean.txt", "data/temp/bi_twit_1.txt", nGramType = 2,progressCount = 10000)
 bigrams <- fread("data/temp/bi_twit_1.txt", sep="\n", header=FALSE)
