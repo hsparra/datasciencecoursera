@@ -208,7 +208,7 @@ runTest <- function() {
     
     str <- "I can't deal with unsymetrical things. I can't even hold an uneven number of bags of groceries in each"
     pos <- c("toe", "arm", "hand", "finger")
-    print("Q7. - should get -->  ?hand?  <--")
+    print("Q7. - should get -->  arm?hand?  <--")
     findBestMatches(str, pos)
     
     str <- "Every inch of you is perfect from the bottom to the"
