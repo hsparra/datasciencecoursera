@@ -110,24 +110,7 @@ triMatch2 <- function(str, tbl, dict, n=4) {
     keys <- match(x, dict)
     print(keys)    # TEST
     matches <- tbl[V1==keys][V2==keys]
-    print(dim(matches))    # TEST
-#    v1 <- x[length(x)]
-#    v2s <- setdiff(v1, x)
-#    matches <- data.table()
-#    matches <- rbind(tbl[V1==v1 & V2==v2s])
-#     primary <- length(x)
-#     vars <- x[(length(x) - 1) : length(x)]
-#     matches <- data.table()
-#     
-#     for (j in 1:2) {
-#         for (i in (primary - 1):1) {
-#             vars <- c(x[primary], x[i])
-#             key <- paste("V", 1:2,"==",decodeVars(vars, dict), sep="", collapse=" & ")
-#             print(key)
-#             matches <- rbind(matches, eval(parse(text=paste("tbl[", key, "]"))))
-#         }
-#     }
-    
+
     matches <- matches[order(-count)]
     print("before decode")   # TEST
     print(head(matches))     # TEST
