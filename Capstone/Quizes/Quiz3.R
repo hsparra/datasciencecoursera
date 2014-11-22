@@ -172,6 +172,11 @@ load("data/tables/t_tri_twit_1.RData")
 
 matches <- returnMatches("some sring", tri_table)
 
+quickMatch <- function(x, n=5) {
+    triMatch(x, tri_mult_bi, wrds, n)
+}
+
+
 runTest <- function() {
     str <- "When you breathe, I want to be the air for you. I'll be there for you, I'd live and I'd"
     pos <- c("die", "eat", "sleep", "give")
@@ -182,12 +187,12 @@ runTest <- function() {
 
     str <- "Guy at my table's wife got up to go to the bathroom and I asked about dessert and he started telling me about his"
     pos <- c("horitcultural", "financial", "marital", "spiritual")
-    print("Q2. - should get -->  marital??  <--")
+    print("Q2. - should get -->  marital  <--")
     findBestMatches(str, pos)
     
     str <- "I'd give anything to see arctic monkeys this"
     pos <- c("decade", "morning", "weekend", "month")
-    print("Q3. - should get -->  ??  <--")
+    print("Q3. - should get -->  weekend??  <--")
 #     findBestMatches(str, pos)
     findMatches(str, trigrams, wrds)
     
@@ -198,17 +203,17 @@ runTest <- function() {
     
     str <- "When you were in Holland you were like 1 inch away from me but you hadn't time to take a"
     pos <- c("walk", "look", "minute", "picture")
-    print("Q5. - should get -->  picture or look  <--")
+    print("Q5. - should get -->  picture or look?  <--")
     findBestMatches(str, pos)
     
     str <- "I'd just like all of these questions answered, a presentation of evidence, and a jury to settle the"
     pos <- c("matter", "incident", "case", "account")
-    print("Q6. - should get -->  matter  <--")
+    print("Q6. - should get -->  matter (or case)?  <--")
     findBestMatches(str, pos)
     
     str <- "I can't deal with unsymetrical things. I can't even hold an uneven number of bags of groceries in each"
     pos <- c("toe", "arm", "hand", "finger")
-    print("Q7. - should get -->  arm?hand?  <--")
+    print("Q7. - should get -->  hand  (arm?)  <--")
     findBestMatches(str, pos)
     
     str <- "Every inch of you is perfect from the bottom to the"
