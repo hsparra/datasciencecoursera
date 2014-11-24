@@ -213,6 +213,7 @@ createDictionary <- function(t) {
     dict <- data.table(id = seq_len(length(wrds)), word = wrds)
 }
 
+# Use only if having a single table
 compressTable <- function(t) {
     wrds <- strsplit(t$word, split=" ") %>% unlist
     dict <- unique(wrds)
@@ -253,6 +254,7 @@ addToDecode <- function(dt, out=character(0)) {
 
 
 
+
 ### CLEAN FILES
 files <- list.files("data/split/", pattern="_[56].txt", full.names = TRUE)
 sapply(files, cleanFile)
@@ -271,8 +273,7 @@ sapply(inF, createNGramsFromVector, nGramType=3)
 
 
 
-### CREATE UNIQUE WORD LIST
-# Create Decode Table
+# CREATE DECODE TABLE
 # Only need to process the bigram files since they already contain all the words
 files <- list.files("data/ngrams/", pattern="2gram.txt", full.names = TRUE)
 wrds <- character(0)
@@ -288,9 +289,10 @@ gc()
 
 
 
-### CREATE MATCHING TABLES
-# Create count tables and compress
+# CREATE COUNT TABLES AND COMPRESS
+files <- list.files("data/ngrams/", full.names = TRUE)
 files <- list.files("data/ngrams/", pattern="_[3456]_",full.names = TRUE)
+
 for (f in files) {
     cat("Processing file:", f, "\n")
     dt <- fread(f, header=FALSE)
@@ -304,8 +306,9 @@ for (f in files) {
 }
 
 
-### COMBINE MATCH TABLES
-# create a combined table for matching
+
+
+# CREATE COMBINED TABLE FOR MATCHING
 files <- list.files("data/tables/", pattern="_1_3gram.RData", full.names=TRUE) 
 files <- list.files("data/tables/", pattern="_1_2gram.RData", full.names=TRUE) 
 files <- list.files("data/tables/", pattern="_2gram.RData", full.names=TRUE)
