@@ -44,13 +44,14 @@ createFilePath <- function(inPath, outPath, outSuffix) {
 
 cleanText <- function(data, split=FALSE) {
     data <- tolower(data)
-    data <- gsub("[[:punct:]]", " ", data)
-    data <- gsub("[^a-z]", " ", data)
     data <- unlist(strsplit(data, split=" "))
     data <- remove_stopwords(data, stopwords())
+    data <- gsub("[[:punct:]]", " ", data)
+    data <- gsub("[^a-z]", " ", data)
     data <- data[ data != " "]
 #    data <- wordStem(data)
     data <- data[data != ""]
+    data <- gsub("(?<=[^[se]])s$", "", data, perl = TRUE)    # Remove at end of word if not preceded by an s
     if (split) {
         data <- paste(data, collapse = " ")
     } else {
