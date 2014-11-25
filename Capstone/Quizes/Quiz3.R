@@ -63,7 +63,3 @@ runTest <- function() {
     findBestMatches(str, pos)
 }
 
-# Manual steps to see what is returned
-xy <- returnMatches(str, bi_table)
-reg <- createRegex(str)
-xy_m <- findMatch(xy, pos)
