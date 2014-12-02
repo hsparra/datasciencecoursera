@@ -249,7 +249,7 @@ inF <- c("data/cleaned/blogs_1_clean.txt")
 inF <- list.files("data/cleaned/", pattern="_[34]_clean", full.names = TRUE)
 sapply(inF, createNGramsFromVector, nGramType=2)
 sapply(inF, createNGramsFromVector, nGramType=3)
-
+sapply(inF, createNGramsFromVector, nGramType=4)
 
 
 addToDecode <- function(dt, out=character(0)) {
