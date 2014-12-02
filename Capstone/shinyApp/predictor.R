@@ -96,8 +96,8 @@ triMatch <- function(str, tbl, dict, n=5) {
 }
 
 triMatchAll <- function(str, tbl, dict, n=5) {
-    #x <- cleanTextForMatch(str)
-    x <- cleanText(str)    # TEST - uses clean_data.R cleaner
+    x <- cleanTextForMatch(str)
+#     x <- cleanText(str)    # TEST - uses clean_data.R cleaner
     keys <- match(x, dict)
     lastCheck <- length(keys) - 3
     if (lastCheck < 1) { lastCheck == 1 }
@@ -134,6 +134,6 @@ triMatch2 <- function(str, tbl, dict, n=4) {
 }
 
 quickMatch <- function(x, n=5) {
-    triMatch(x, match_tbl, wrds, n)
+    triMatch(x, trigrams, wrds, n)
 }
 
