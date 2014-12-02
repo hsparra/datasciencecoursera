@@ -1,5 +1,5 @@
 library(doMC)
-registerDoMC(2)
+registerDoMC(5)
 library(tau)
 # suppressMessages(library(ggplot2))
 suppressMessages(library(magrittr))
@@ -7,6 +7,7 @@ suppressMessages(library(tm))
 suppressMessages(library(SnowballC))
 suppressMessages(library(dplyr))
 suppressMessages(library(data.table))
+library(RWeka)
 
 splitFile<- function(inFile, outLocation, outPrefix, folds = 10) {
     con <- file(inFile,"r")
@@ -44,13 +45,14 @@ createFilePath <- function(inPath, outPath, outSuffix) {
 
 cleanText <- function(data, split=FALSE) {
     data <- tolower(data)
-    data <- gsub("[[:punct:]]", " ", data)
-    data <- gsub("[^a-z]", " ", data)
     data <- unlist(strsplit(data, split=" "))
     data <- remove_stopwords(data, stopwords())
+    data <- gsub("[[:punct:]]", " ", data)
+    data <- gsub("[^a-z]", " ", data)
     data <- data[ data != " "]
 #    data <- wordStem(data)
     data <- data[data != ""]
+    data <- gsub("(?<=[^[se]])s$", "", data, perl = TRUE)    # Remove at end of word if not preceded by an s
     if (split) {
         data <- paste(data, collapse = " ")
     } else {
@@ -62,7 +64,7 @@ cleanText <- function(data, split=FALSE) {
     data
 }
 
-cleanFiles <- function (inFile, outFile, step=100, progressCount = 10000) {
+cleanFiles <- function (inFile, outFile, step=1000, progressCount = 10000) {
     #con <- file(inFile,"r")
     data <- fread(inFile, sep="\n", header=FALSE)
     end <- length(data$V1)
@@ -75,7 +77,8 @@ cleanFiles <- function (inFile, outFile, step=100, progressCount = 10000) {
     while (j < end) {
         j <- i + step
         if (j > end) { j <- end }
-        cleaned <- sapply(data$V1[i:j], cleanText, TRUE)
+        #cleaned <- sapply(data$V1[i:j], cleanText, TRUE)
+        cleaned <- unlist(mclapply(data$V1[i:j], cleanText, TRUE, mc.cores=getOption("mc.cores", numCores)))
         cleaned <- cleaned[cleaned != ""]
         writeLines(cleaned, con=conOut)
         i <- i + step + 1
@@ -89,7 +92,7 @@ cleanFiles <- function (inFile, outFile, step=100, progressCount = 10000) {
     close(conOut)
 }
 
-cleanFile <- function(f, step=100, progressCount=10000) {
+cleanFile <- function(f, step=1000, progressCount=10000) {
     #f <- paste("/data/split/", f, sep="")
     f <- gsub("//", "/", f)
     outF <- paste("data/cleaned/",  strsplit(f, split="/") %>% unlist %>% last, sep="") %>% 
@@ -98,9 +101,7 @@ cleanFile <- function(f, step=100, progressCount=10000) {
 }
 
 
-## CLEAN FILES
-files <- list.files("data/split/", pattern="_[34].txt", full.names = TRUE)
-sapply(files, cleanFile)
+
 
 # If can do multicore and have plenty of memory
 library(parallel)
@@ -132,6 +133,7 @@ createTableOfFrequencies <- function(x) {
 combineCountTables <- function (t1, t2=data.table()) {
     if (dim(t2)[1] == 0) { return(t1)}
     m_cols <- names(t1) %>% function(x) x[1:(length(x) -1)]
+#     cat("merge columns", m_cols, "\n")     # TEST
     t <- merge(t1, t2, by=m_cols, all = TRUE)
     t[is.na(t)] <- 0
 #     n <- names(t) %>% function(x) x[(length(m_cols) + 1):length(x)] %>% paste(collapse="+")
@@ -181,7 +183,7 @@ createNGrams <- function (inFile, outFile, nGramType=2, step=100, progressCount=
     cat("All", j, "lines have been processed", "\n")
 }
 
-library(RWeka)
+
 
 processCleanedFile <- function (inFile, outFile, identifier="none", nGramType=2, progressCount=10000) {
     nGramFile <- paste("data/temp/", outFile, ".txt", sep="")
@@ -244,12 +246,14 @@ createNGramsFromVector <- function(v, nGramType=2, progressCount=10000) {
 
 
 
+
 ### CREATE NGRAMS
 inF <- c("data/cleaned/blogs_1_clean.txt")
 inF <- list.files("data/cleaned/", pattern="_[34]_clean", full.names = TRUE)
 sapply(inF, createNGramsFromVector, nGramType=2)
 sapply(inF, createNGramsFromVector, nGramType=3)
 sapply(inF, createNGramsFromVector, nGramType=4)
+
 
 
 addToDecode <- function(dt, out=character(0)) {
@@ -263,24 +267,50 @@ addToDecode <- function(dt, out=character(0)) {
     wrds
 }
 
-files <- list.files("data/ngrams/", pattern="twitter_._2gram", full.names = TRUE)
+
+
+
+
+### CLEAN FILES
+files <- list.files("data/split/", pattern="blogs.*_[123456].txt", full.names = TRUE)
+sapply(files, cleanFile)
+
+# for multicore
+# mclapply(files, cleanFile, mc.cores=getOption("mc.cores", numCores))
+
+
+
+### CREATE NGRAMS
+inF <- c("data/cleaned/blogs_1_clean.txt")
+inF <- list.files("data/cleaned/", pattern="twitter_", full.names = TRUE)
+sapply(inF, createNGramsFromVector, nGramType=2)
+sapply(inF, createNGramsFromVector, nGramType=3)
+
+#files <- list.files("data/ngrams/", pattern="twitter_._2gram", full.names = TRUE)
+
 
 
 # CREATE DECODE TABLE
 # Only need to process the bigram files since they already contain all the words
-files <- list.files("data/ngrams/", pattern="2gram.txt", full.names = TRUE)
+files <- list.files("data/ngrams/", pattern="(blogs|twitter).*2gram.txt", full.names = TRUE)
 wrds <- character(0)
 for (f in files) {
+    cat("Processing file:", f, "\n")
     dt <- fread(f, header=FALSE)
-    dt <- createMatchTable(dt)
+    #dt <- createMatchTable(dt)
     wrds <- addToDecode(dt, wrds)
 }
-save(wrds, file="data/tables/words.txt")
+save(wrds, file="data/tables/decode.RData")
 rm(dt)
 gc()
 
+
+
 # CREATE COUNT TABLES AND COMPRESS
 files <- list.files("data/ngrams/", full.names = TRUE)
+files <- list.files("data/ngrams/", pattern="_[3456]_",full.names = TRUE)
+files <- list.files("data/ngrams/", pattern="(blogs|twitter).*3gram", full.names = TRUE)
+
 for (f in files) {
     cat("Processing file:", f, "\n")
     dt <- fread(f, header=FALSE)
@@ -293,20 +323,30 @@ for (f in files) {
     save(l, file=outF)
 }
 
+
+
+
 # CREATE COMBINED TABLE FOR MATCHING
 files <- list.files("data/tables/", pattern="_1_3gram.RData", full.names=TRUE) 
 files <- list.files("data/tables/", pattern="_1_2gram.RData", full.names=TRUE) 
+files <- list.files("data/tables/", pattern="_2gram.RData", full.names=TRUE)
+files <- list.files("data/tables/", pattern="_3gram.RData", full.names=TRUE)
 
 outDt <- data.table()
 for (f in files) {
-    cat("Processing file:", f, "\n")
+    cat("Processing file:", f, "  ", date(), "\n")
     load(f)
     dt <- l[[1]]
     outDt <- combineCountTables(dt, outDt)
 }
-bigrams <- outDt
+
+bigrams <- outDt   # when bigrams
 save(bigrams, file="data/tables/bigrams_1.RData")
-# get eh counts for each
+
+trigrams <- outDt   # when trigrams
+save(trigrams, file="data/tables/trigrams.RData")
+
+t# get eh counts for each
 cnts <- data.table(outDt$count)[,.N, keyby=outDt$count][, prcnt := N/sum(N)]
 
 createNGrams("data/cleaned/twitter_1_clean.txt", "data/temp/bi_twit_1.txt", nGramType = 2,progressCount = 10000)

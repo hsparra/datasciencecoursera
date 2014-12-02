@@ -96,7 +96,8 @@ triMatch <- function(str, tbl, dict, n=5) {
 }
 
 triMatchAll <- function(str, tbl, dict, n=5) {
-    x <- cleanTextForMatch(str)
+    #x <- cleanTextForMatch(str)
+    x <- cleanText(str)    # TEST - uses clean_data.R cleaner
     keys <- match(x, dict)
     lastCheck <- length(keys) - 3
     if (lastCheck < 1) { lastCheck == 1 }
@@ -123,12 +124,16 @@ triMatch2 <- function(str, tbl, dict, n=4) {
     #matches <- rbind(matches, getTriMatches(x, (length(x) - 1), tbl))
     
     keys <- match(x, dict)
-    print(keys)    # TEST
-    matches <- tbl[V1==keys][V2==keys]
+#     matches <- tbl[V1==keys][V2==keys]
+    ndx <- length(keys)
+    matches <- tbl[V2 == keys[ndx]][V1 == keys[(ndx - 1)]]
+    
 
     matches <- matches[order(-count)]
-    print("before decode")   # TEST
-    print(head(matches))     # TEST
     list(decodeTopMatches(matches[, V3], dict, n), matches)
+}
+
+quickMatch <- function(x, n=5) {
+    triMatch(x, match_tbl, wrds, n)
 }
 
