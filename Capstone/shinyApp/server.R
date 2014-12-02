@@ -1,17 +1,23 @@
 library(shiny)
 source("predictor.R")
 
-# trigrams <- load("../data/tables/trigrams.RData")
-trigrams <- readRDS("../data/tables/trigrams.RDS")
-wrds <- readRDS("../data/tables/words.RDS")
+# trigrams <- load("data/trigrams.RData")
+# trigrams <- readRDS("data/tri_sm.RDS")
+# wrds <- readRDS("data/wrds.RDS")
+load("data/trigrams.RData")
+load("data/decode.RData")
 
 shinyServer(function(input, output) {
-#     observe({
-#         inPhrase <- input$phrase
+    observe({
+        inPhrase <- input$phrase
 #     })
-    trigrams <- readRDS("../data/tables/trigrams.RDS")
-    wrds <- readRDS("../data/tables/words.RDS")
-    output$guess <- renderText(quickMatch(input$phrase, n=1))
-    output$message <- renderText("did a guess")
-    output$tbl <- renderText(quickMatch(input$phrase))
+#     trigrams <- readRDS("data/tri_sm.RDS")
+#     wrds <- readRDS("data/wrds.RDS")
+
+    if (nchar(isolate(input$phrase)) > 10 ) {
+        output$guess <- renderText(quickMatch(isolate(input$phrase), n=1))
+        output$message <- renderText("did a guess")
+        output$tbl <- renderText(quickMatch(isolate(input$phrase)))
+    }
+})
 })

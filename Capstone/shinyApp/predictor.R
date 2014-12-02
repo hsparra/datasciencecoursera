@@ -22,6 +22,26 @@ cleanTextForMatch <- function(str) {
     str
 }
 
+cleanText <- function(data, split=FALSE) {
+    data <- tolower(data)
+    data <- unlist(strsplit(data, split=" "))
+    data <- remove_stopwords(data, stopwords())
+    data <- gsub("[[:punct:]]", " ", data)
+    data <- gsub("[^a-z]", " ", data)
+    data <- data[ data != " "]
+    #    data <- wordStem(data)
+    data <- data[data != ""]
+    data <- gsub("(?<=[^[se]])s$", "", data, perl = TRUE)    # Remove at end of word if not preceded by an s
+    if (split) {
+        data <- paste(data, collapse = " ")
+    } else {
+        data <- unlist(strsplit(data, split = " ")) %>%
+            function (x) x[ x != ""]
+    }
+    data <- gsub("[ ]{2,}", " ", data)
+    data <- gsub("^[ ]+", "", data)
+    data
+}
 decodeTopMatches <- function(matchesIn, dict, n=3) {
     
     if (length(matchesIn) < n) {
@@ -96,8 +116,8 @@ triMatch <- function(str, tbl, dict, n=5) {
 }
 
 triMatchAll <- function(str, tbl, dict, n=5) {
-    x <- cleanTextForMatch(str)
-#     x <- cleanText(str)    # TEST - uses clean_data.R cleaner
+#     x <- cleanTextForMatch(str)
+    x <- cleanText(str)    # TEST - uses clean_data.R cleaner
     keys <- match(x, dict)
     lastCheck <- length(keys) - 3
     if (lastCheck < 1) { lastCheck == 1 }
@@ -109,6 +129,7 @@ triMatchAll <- function(str, tbl, dict, n=5) {
         matches <- tbl[V2 == keys[length(keys)]]
     }
 
+    matches <- matches[,bi_cnt := .N, by=c("V1","V2")]
     matches <- unique(matches[, m_cnt := sum(count), by=V3], by="V3")
     # Select the top 2 for each V1 match - this will give the highest counts
     # for the V1 & V2 combos with the corresponding V3 value
