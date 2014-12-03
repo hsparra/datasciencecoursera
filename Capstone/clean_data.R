@@ -50,7 +50,8 @@ cleanText <- function(data, split=FALSE) {
     data <- gsub("[[:punct:]]", " ", data)
     data <- gsub("[^a-z]", " ", data)
     data <- data[ data != " "]
-#    data <- wordStem(data)
+   data <- wordStem(data)
+   data <- remove_stopwords(data, stopwords())   # Remove stopwords created by stemming
     data <- data[data != ""]
     data <- gsub("(?<=[^[se]])s$", "", data, perl = TRUE)    # Remove at end of word if not preceded by an s
     if (split) {
@@ -127,12 +128,14 @@ createTableOfFrequencies <- function(x) {
 #     wrds <- table(x)
 #     data.table(word = names(wrds), count = as.numeric(wrds))
     n <- names(x)
+    x <- x[,bi_cnt := .N, by=c("V1", "V2")]
     wrds <- unique(x[,count := .N, by=n], by=n)
+    wrds <- wrds[,ratio := count/bi_cnt]
 }
 
 combineCountTables <- function (t1, t2=data.table()) {
     if (dim(t2)[1] == 0) { return(t1)}
-    m_cols <- names(t1) %>% function(x) x[1:(length(x) -1)]
+    m_cols <- names(t1) %>% function(x) x[1:(length(x) -3)]
 #     cat("merge columns", m_cols, "\n")     # TEST
     t <- merge(t1, t2, by=m_cols, all = TRUE)
     t[is.na(t)] <- 0
@@ -140,7 +143,10 @@ combineCountTables <- function (t1, t2=data.table()) {
 #     cat("names =", names(t), ",  and n =", n, "\n")   # TEST
 #     t_l <- eval(parse(text=paste("t[, count :=", n, "]")))  # use dynamically created count formula
     t_l <- t[, count := count.x + count.y]
-    t_l <- t_l[,c(1:length(m_cols), dim(t_l)[2]), with=FALSE]
+    t_l <- t[, bi_cnt := bi_cnt.x + bi_cnt.y]
+    t_l <- t[, ratio := count/bi_cnt]
+#     t_l <- t_l[,c(1:length(m_cols), dim(t_l)[2]), with=FALSE]
+    t_l <- t_l[,-c(4:9), with=FALSE]
     t_l
 }
 
@@ -229,7 +235,7 @@ compressTable <- function(t) {
 
 compressTableWithWordMapping <- function(t, w) {
     n <- names(t)
-    n <- n[1:(length(n)-1)]
+    n <- n[1:(length(n)-3)]
     tOut <-t[,(n):= lapply(.SD, match, w), .SDcols=n]
 }
 
