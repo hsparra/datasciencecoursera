@@ -16,7 +16,6 @@ shinyUI(fluidPage(
         textInput("phrase", "",""),
         submitButton("Make guess"),
         
-        verbatimTextOutput("message"),
         verbatimTextOutput("guess"),
         textOutput("tbl")
         )
