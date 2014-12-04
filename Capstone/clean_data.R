@@ -101,7 +101,14 @@ cleanFile <- function(f, step=1000, progressCount=10000) {
     cleanFiles(f, outF, step, progressCount)
 }
 
-
+getWordCounts <- function(file) {
+    d <- fread(file, sep="\n",sep2 = " ", header=FALSE)
+    d2 <- sapply(d, strsplit, " ") %>% unlist %>% tolower
+    d2 <- gsub("[^a-z]", "", d2) %>% data.table
+    d3 <- unique(d2[, count := .N, by=V1], by="V1")
+    d3 <- d3[V1 != ""]
+    d3 <- d3[order(-count)]
+}
 
 
 # If can do multicore and have plenty of memory
