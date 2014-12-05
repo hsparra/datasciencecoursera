@@ -124,6 +124,11 @@ getWordCounts <- function(file) {
 # If can do multicore and have plenty of memory
 library(parallel)
 numCores <- 5       # Number of cores you want to use
+
+
+
+
+####   SPLIT FILES
 for (f in list.files("data/split/", pattern = "twitter", full.names = FALSE)) {
     if (grepl("twitter_1.txt", f)) { next }
     
@@ -142,8 +147,6 @@ for (f in list.files("data/split/", pattern = "twitter", full.names = FALSE)) {
 #cleanFiles("en_us/en_US.news.txt", "data/cleaned/news_clean.txt")
 
 createTableOfFrequencies <- function(x) {
-#     wrds <- table(x)
-#     data.table(word = names(wrds), count = as.numeric(wrds))
     n <- names(x)
     x <- x[,bi_cnt := .N, by=c("V1", "V2")]
     wrds <- unique(x[,count := .N, by=n], by=n)
@@ -153,16 +156,11 @@ createTableOfFrequencies <- function(x) {
 combineCountTables <- function (t1, t2=data.table()) {
     if (dim(t2)[1] == 0) { return(t1)}
     m_cols <- names(t1) %>% function(x) x[1:(length(x) -3)]
-#     cat("merge columns", m_cols, "\n")     # TEST
     t <- merge(t1, t2, by=m_cols, all = TRUE)
     t[is.na(t)] <- 0
-#     n <- names(t) %>% function(x) x[(length(m_cols) + 1):length(x)] %>% paste(collapse="+")
-#     cat("names =", names(t), ",  and n =", n, "\n")   # TEST
-#     t_l <- eval(parse(text=paste("t[, count :=", n, "]")))  # use dynamically created count formula
     t_l <- t[, count := count.x + count.y]
     t_l <- t[, bi_cnt := bi_cnt.x + bi_cnt.y]
     t_l <- t[, ratio := count/bi_cnt]
-#     t_l <- t_l[,c(1:length(m_cols), dim(t_l)[2]), with=FALSE]
     t_l <- t_l[,-c(4:9), with=FALSE]
     t_l
 }
@@ -207,7 +205,7 @@ createNGrams <- function (inFile, outFile, nGramType=2, step=100, progressCount=
 }
 
 
-
+# Deprecated
 processCleanedFile <- function (inFile, outFile, identifier="none", nGramType=2, progressCount=10000) {
     nGramFile <- paste("data/temp/", outFile, ".txt", sep="")
     createNGrams(inFile, nGramFile, nGramType=2, progressCount)
@@ -219,6 +217,7 @@ processCleanedFile <- function (inFile, outFile, identifier="none", nGramType=2,
     save(table, file=tableObj)
 }
 
+# Deprecated
 for (f in list.files("data/cleaned/", pattern = "twitter", full.names = data)) {
     cat(date(), "- Processing file", f, "\n")
     outF <- strsplit(f, "/") %>% function(x) x[length(x)] %>%  gsub(".txt", "_clean.txt", x)
@@ -270,7 +269,7 @@ createNGramsFromVector <- function(v, nGramType=2, progressCount=10000) {
 
 
 
-### CREATE NGRAMS
+### Deprecated - Crate Ngrams
 inF <- c("data/cleaned/blogs_1_clean.txt")
 inF <- list.files("data/cleaned/", pattern="_[34]_clean", full.names = TRUE)
 sapply(inF, createNGramsFromVector, nGramType=2)
