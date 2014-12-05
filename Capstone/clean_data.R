@@ -50,6 +50,9 @@ cleanText <- function(data, split=FALSE, stemWords=TRUE, noStemLast=FALSE) {
     data <- gsub("[[:punct:]]", " ", data)
     data <- gsub("[^a-z]", " ", data)
     data <- data[ data != " "]
+    if (length(data) <= 1) {
+        return("")
+    }
     if (noStemLast) {
         lastWord <- data[length(data)]
         data <- data[1:(length(data) - 1)]
@@ -59,6 +62,9 @@ cleanText <- function(data, split=FALSE, stemWords=TRUE, noStemLast=FALSE) {
     }
    
     data <- remove_stopwords(data, stopwords())   # Remove stopwords created by stemming
+    if (noStemLast) {
+        data <- c(data, lastWord)
+    }
     data <- data[data != ""]
     data <- gsub("(?<=[^[se]])s$", "", data, perl = TRUE)    # Remove at end of word if not preceded by an s
     if (split) {
@@ -67,9 +73,7 @@ cleanText <- function(data, split=FALSE, stemWords=TRUE, noStemLast=FALSE) {
         data <- unlist(strsplit(data, split = " ")) %>%
             function (x) x[ x != ""]
     }
-    if (noStemLast) {
-        data <- c(data, lastWord)
-    }
+    
     data <- gsub("[ ]{2,}", " ", data)
     data <- gsub("^[ ]+", "", data)
     data
@@ -89,7 +93,7 @@ cleanFiles <- function (inFile, outFile, step=1000, progressCount = 10000) {
         j <- i + step
         if (j > end) { j <- end }
         #cleaned <- sapply(data$V1[i:j], cleanText, TRUE)
-        cleaned <- unlist(mclapply(data$V1[i:j], cleanText, TRUE, mc.cores=getOption("mc.cores", numCores)))
+        cleaned <- unlist(mclapply(data$V1[i:j], cleanText, TRUE, noStemLast=TRUE, mc.cores=getOption("mc.cores", numCores)))
         cleaned <- cleaned[cleaned != ""]
         writeLines(cleaned, con=conOut)
         i <- i + step + 1
