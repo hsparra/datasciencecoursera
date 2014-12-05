@@ -111,16 +111,17 @@ cleanFiles <- function (inFile, outFile, step=1000, progressCount = 10000) {
     #con <- file(inFile,"r")
     data <- fread(inFile, sep="\n", header=FALSE)
     end <- length(data$V1)
-    cat("the number of lines in", outFile, "is ", end, "\n")
+    cat("the number of lines in", inFile, "is ", end, "\n")
     conOut <- file(outFile, "w")
     
     i <- 1
     j <- 1
     msg_cnt <- 1
+    outData <- as.character()
     while (j < end) {
         j <- i + step
         if (j > end) { j <- end }
-        #cleaned <- sapply(data$V1[i:j], cleanText, TRUE)
+#         cleaned <- sapply(data$V1[i:j], cleanText, TRUE, noStemLast=TRUE)
         cleaned <- unlist(mclapply(data$V1[i:j], cleanText, TRUE, noStemLast=TRUE, mc.cores=getOption("mc.cores", numCores)))
         cleaned <- cleaned[cleaned != ""]
         writeLines(cleaned, con=conOut)
@@ -132,6 +133,7 @@ cleanFiles <- function (inFile, outFile, step=1000, progressCount = 10000) {
             msg_cnt <- 1
         }
     }
+
     close(conOut)
 }
 
@@ -160,7 +162,7 @@ numCores <- 5       # Number of cores you want to use
 
 
 
-####   SPLIT FILES
+####   deprecated Clean txt calls
 for (f in list.files("data/split/", pattern = "twitter", full.names = FALSE)) {
     if (grepl("twitter_1.txt", f)) { next }
     
@@ -174,6 +176,7 @@ for (f in list.files("data/split/", pattern = "twitter", full.names = FALSE)) {
     write(cln, out)
     close(con)
 }
+
 
 #cleanFiles("en_us/en_US.blogs.txt", "data/cleaned/blog_clean.txt")
 #cleanFiles("en_us/en_US.news.txt", "data/cleaned/news_clean.txt")
@@ -237,6 +240,51 @@ createNGrams <- function (inFile, outFile, nGramType=2, step=100, progressCount=
 }
 
 
+# Create NGrams using only the last portion of line
+create3Grams <- function(data) {
+    data <- strsplit(data, " ") %>% unlist
+    if length(data <= 3) {
+        return("")
+    }
+    out_data <- character(0)
+    n <- length(data) - 1
+    for (j in n:2) {
+#         for (i in (j-1):1) {
+            out_data <- append(out_data, paste(data[j-1], data[j], data[length(data)], sep = " "))
+#             out_data <- append(out_data, paste(data[j-2], data[j], data[length(data)], sep = " "))
+#         }
+    }
+    out_data
+}
+
+create3GramFromEnd <- function(inFile, outFile, progressCount=10000) {
+    #con <- file(inFile,"r")
+    d <- fread(inFile, sep="\n", header=FALSE)
+    end <- length(d$V1)
+    cat("the number of lines for file", inFile, "is ", end, "\n")
+    cat("out file will be", outFile, "\n")
+    conOut <- file(outFile, "w")
+    
+    i <- 1
+    msg_cnt <- 1
+    while (i < end) {
+        grams <- create3Grams(d$V1[i])
+        i <- i + 1
+        msg_cnt <- msg_cnt + 1
+        if (nchar(grams[1])[1] == 0) { 
+            next
+        }
+        writeLines(grams, con=conOut)
+        if (msg_cnt >= progressCount) {
+            cat(i, "  lines have been processed", "\n")
+            msg_cnt <- 1
+        }
+    }
+    close(conOut)
+    cat("All", end, "lines have been processed", "\n")
+}
+
+
 # Deprecated
 processCleanedFile <- function (inFile, outFile, identifier="none", nGramType=2, progressCount=10000) {
     nGramFile <- paste("data/temp/", outFile, ".txt", sep="")
@@ -297,7 +345,12 @@ createNGramsFromVector <- function(v, nGramType=2, progressCount=10000) {
     createNGrams(v, outF, nGramType, progressCount)
 }
 
-
+create3GramsFromVector <- function(v, progressCount=10000) {
+    v <- gsub("//", "/", v)
+    outF <- paste("data/ngrams/",  strsplit(v, split="/") %>% unlist %>% last, sep="") %>% 
+        function(x) gsub("clean", "clean_end", x)
+    create3GramFromEnd(v, outF, progressCount)
+}
 
 
 
@@ -326,7 +379,7 @@ addToDecode <- function(dt, out=character(0)) {
 
 
 ### CLEAN FILES
-files <- list.files("data/split/", pattern="(blogs|twitter).*_[123456].txt", full.names = TRUE)
+files <- list.files("data/split/", pattern="blogs.*_[123456].txt", full.names = TRUE)
 sapply(files, cleanFile)
 
 # for multicore
@@ -336,10 +389,11 @@ sapply(files, cleanFile)
 
 ### CREATE NGRAMS
 inF <- c("data/cleaned/blogs_1_clean.txt")
-inF <- list.files("data/cleaned/", pattern="twitter_", full.names = TRUE)
+inF <- list.files("data/cleaned/", pattern="(blogs|twitter)_", full.names = TRUE)
 sapply(inF, createNGramsFromVector, nGramType=2)
 sapply(inF, createNGramsFromVector, nGramType=3)
 
+sapply(inF, create3GramsFromVector)
 #files <- list.files("data/ngrams/", pattern="twitter_._2gram", full.names = TRUE)
 
 
