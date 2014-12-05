@@ -294,7 +294,7 @@ addToDecode <- function(dt, out=character(0)) {
 
 
 ### CLEAN FILES
-files <- list.files("data/split/", pattern="blogs.*_[123456].txt", full.names = TRUE)
+files <- list.files("data/split/", pattern="(blogs|twitter).*_[123456].txt", full.names = TRUE)
 sapply(files, cleanFile)
 
 # for multicore
