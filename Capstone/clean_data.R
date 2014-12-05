@@ -43,15 +43,22 @@ createFilePath <- function(inPath, outPath, outSuffix) {
     outF
 }
 
-cleanText <- function(data, split=FALSE) {
+cleanText <- function(data, split=FALSE, stemWords=TRUE, noStemLast=FALSE) {
     data <- tolower(data)
     data <- unlist(strsplit(data, split=" "))
     data <- remove_stopwords(data, stopwords())
     data <- gsub("[[:punct:]]", " ", data)
     data <- gsub("[^a-z]", " ", data)
     data <- data[ data != " "]
-   data <- wordStem(data)
-   data <- remove_stopwords(data, stopwords())   # Remove stopwords created by stemming
+    if (noStemLast) {
+        lastWord <- data[length(data)]
+        data <- data[1:(length(data) - 1)]
+    }
+    if (stemWords) {
+        data <- wordStem(data)
+    }
+   
+    data <- remove_stopwords(data, stopwords())   # Remove stopwords created by stemming
     data <- data[data != ""]
     data <- gsub("(?<=[^[se]])s$", "", data, perl = TRUE)    # Remove at end of word if not preceded by an s
     if (split) {
@@ -59,6 +66,9 @@ cleanText <- function(data, split=FALSE) {
     } else {
         data <- unlist(strsplit(data, split = " ")) %>%
             function (x) x[ x != ""]
+    }
+    if (noStemLast) {
+        data <- c(data, lastWord)
     }
     data <- gsub("[ ]{2,}", " ", data)
     data <- gsub("^[ ]+", "", data)
