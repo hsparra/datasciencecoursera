@@ -9,6 +9,26 @@ suppressMessages(library(dplyr))
 suppressMessages(library(data.table))
 library(RWeka)
 
+splitIntoSentences <- function(inFile, outLocation, outPrefix) {
+    print(inFile)    # TEST
+    inFile <- gsub("//", "/", inFile)
+    f_file <- fread(inFile, sep="\n", header=FALSE)
+    
+    o_data <- strsplit(f_file$V1, split="[.?!] ") %>% unlist
+    o_data <- gsub("\n", "", o_data)
+    o_data <- o_data[o_data != ""]
+    o_data <- o_data[o_data != " "]
+    
+    o_fname <- strsplit(inFile, split="/") %>% unlist
+    o_fname <- o_fname[length(o_fname)]
+    out_f <- paste(outLocation, o_fname, sep = "")
+    print(out_f)    # TEST
+    out_con <- file(out_f, "w")
+    writeLines(o_data, out_con)
+    close(out_con)
+}
+
+
 splitFile<- function(inFile, outLocation, outPrefix, folds = 10) {
     con <- file(inFile,"r")
     f_file <- readLines(con)
@@ -36,11 +56,19 @@ splitFile("en_US/en_US.twitter.txt", "data/split/", "twitter", 10)
 splitFile("en_US/en_US.blogs.txt", "data/split/", "blogs", 10)
 splitFile("en_US/en_US.news.txt", "data/split/", "news", 10)
 
+files <- list.files("data/split/pre_final/", pattern="blogs_", full.names=TRUE)
+sapply(files, splitIntoSentences, "data/split/", "blogs")
+
 # Create another file path for output based upon a given file
 createFilePath <- function(inPath, outPath, outSuffix) {
     outF <- paste(outPath,  strsplit(inPath, split="/") %>% unlist %>% last, sep="") %>% 
         function(x) gsub(".txt", outSuffix, x)
     outF
+}
+
+cleanTextSplitting <- function(data, split=FALSE, stemWords=TRUE, noStemLast=FALSE) {
+    d <- unlist(strsplit(data, "[.?!]"))
+    sapply(d, cleanPhrase, split, stemWords, noStemLast)
 }
 
 cleanText <- function(data, split=FALSE, stemWords=TRUE, noStemLast=FALSE) {
