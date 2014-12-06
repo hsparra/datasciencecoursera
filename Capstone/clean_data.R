@@ -462,6 +462,7 @@ save(last_wrds, file="data/tables/last_word_counts.RData")
 
 
 # CREATE DECODE TABLE
+# Note: Do not need to do if have word counts table (can use first column)
 # Only need to process the bigram files since they already contain all the words
 files <- list.files("data/ngrams/", pattern="(blogs|twitter).*2gram.txt", full.names = TRUE)
 wrds <- character(0)
@@ -478,7 +479,7 @@ gc()
 
 
 # CREATE COUNT TABLES AND COMPRESS
-files <- list.files("data/ngrams/", full.names = TRUE)
+files <- list.files("data/ngrams/endLine_3grams/", full.names = TRUE)
 files <- list.files("data/ngrams/", pattern="_[3456]_",full.names = TRUE)
 files <- list.files("data/ngrams/", pattern="(blogs|twitter).*3gram", full.names = TRUE)
 
@@ -498,7 +499,7 @@ for (f in files) {
 
 
 # CREATE COMBINED TABLE FOR MATCHING
-files <- list.files("data/tables/", pattern="_1_3gram.RData", full.names=TRUE) 
+files <- list.files("data/tables/", pattern="blogs.*RData", full.names=TRUE) 
 files <- list.files("data/tables/", pattern="_1_2gram.RData", full.names=TRUE) 
 files <- list.files("data/tables/", pattern="_2gram.RData", full.names=TRUE)
 files <- list.files("data/tables/", pattern="_3gram.RData", full.names=TRUE)
