@@ -375,6 +375,44 @@ addToDecode <- function(dt, out=character(0)) {
 }
 
 
+getLastWord <- function(in_wrds) {
+    last_wrd <- strsplit(in_wrds, split=" ") %>%
+        unlist %>%
+        last
+    last_wrd
+}
+
+getWordCounts <- function(in_dt, cum_dt = data.table(), last_word_only = FALSE) {
+    if (last_word_only) {
+#         temp <- sapply(in_dt$V1, getLastWord) %>%
+#             data.table
+        temp <- strsplit(in_dt$V1, split = " ") %>%
+            sapply(last) %>%
+            data.table
+    }  else {
+        temp <- as.matrix(in_dt) %>%
+            as.vector %>%
+            strsplit(split = " ") %>%
+            unlist %>%
+            data.table
+    }
+    temp <- temp[,count := .N, by=V1]
+#     print(head(temp))    # TEST
+    temp <- unique(temp, by="V1")
+#     setkey(temp, V1)
+    if (dim(cum_dt)[1] == 0) {
+        cum_dt <- copy(temp)
+    } else {
+#         cum_dt <- merge(cum_dt, temp, all=TRUE, by = names(cum_dt[1]))
+        cum_dt <- merge(cum_dt, temp, all=TRUE, by="V1")
+#         print(head(cum_dt))    # TEST
+        cum_dt[is.na(cum_dt)] <- 0
+        cum_dt <- cum_dt[, count := count.x + count.y]
+        cum_dt <- cum_dt[,c(1,4), with=FALSE]
+    }
+
+    cum_dt
+}
 
 
 
@@ -396,6 +434,31 @@ sapply(inF, createNGramsFromVector, nGramType=3)
 sapply(inF, create3GramsFromVector)
 #files <- list.files("data/ngrams/", pattern="twitter_._2gram", full.names = TRUE)
 
+
+read.And.Get.Counts <- function(x, cum_cnts, last_word_only=FALSE) {
+    f <- fread(x, sep="\n", header=FALSE)
+    getWordCounts(f, cum_cnts, last_word_only)
+}
+
+
+### CREATE WORD COUNTS
+files <- list.files("data/cleaned/", pattern="(blogs|twitter).*.txt", full.names = TRUE)
+wrd_cnts <- data.table()
+# wrd_cnts <- lapply(files, read.And.Get.Counts, wrd_cnts)  # Returns list with data tables
+for (f in files) {
+    cat("processing file:", f, date(), "\n")
+    wrd_cnts <- read.And.Get.Counts(f, wrd_cnts)
+}
+save(wrd_cnts, file="data/tables/word_counts.RData")
+
+# get count of last word in sentences
+last_wrds <- data.table()
+for (f in files) {
+    cat("processing file:", f, date(), "\n")
+    last_wrds <- read.And.Get.Counts(f, last_wrds, last_word_only=TRUE)
+}
+save(last_wrds, file="data/tables/last_word_counts.RData")
+# call getWordCounts(fileData, cummulative.data.table)
 
 
 # CREATE DECODE TABLE
