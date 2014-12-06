@@ -9,6 +9,28 @@ suppressMessages(library(dplyr))
 suppressMessages(library(data.table))
 library(RWeka)
 
+# If can do multicore and have plenty of memory
+library(parallel)
+numCores <- 5       # Number of cores you want to use
+
+
+# - GENERAL FUNCTIONS - #
+# Create another file path for output based upon a given file
+createFilePath <- function(inPath, outPath, outSuffix) {
+    outF <- paste(outPath,  strsplit(inPath, split="/") %>% unlist %>% last, sep="") %>% 
+        function(x) gsub(".txt", outSuffix, x)
+    outF
+}
+
+getLastWord <- function(in_wrds) {
+    last_wrd <- strsplit(in_wrds, split=" ") %>%
+        unlist %>%
+        last
+    last_wrd
+}
+
+
+# - SPLIT FILE FUNCTIONS - #
 splitIntoSentences <- function(inFile, outLocation, outPrefix) {
     print(inFile)    # TEST
     inFile <- gsub("//", "/", inFile)
@@ -49,7 +71,7 @@ splitFile<- function(inFile, outLocation, outPrefix, folds = 10) {
     }
 }
 
-library(caret)
+# library(caret)
 set.seed(2014)
 
 splitFile("en_US/en_US.twitter.txt", "data/split/", "twitter", 10)
@@ -59,13 +81,9 @@ splitFile("en_US/en_US.news.txt", "data/split/", "news", 10)
 files <- list.files("data/split/pre_final/", pattern="blogs_", full.names=TRUE)
 sapply(files, splitIntoSentences, "data/split/", "blogs")
 
-# Create another file path for output based upon a given file
-createFilePath <- function(inPath, outPath, outSuffix) {
-    outF <- paste(outPath,  strsplit(inPath, split="/") %>% unlist %>% last, sep="") %>% 
-        function(x) gsub(".txt", outSuffix, x)
-    outF
-}
 
+
+# - CLEAN FILE FUNCTIONS - #
 cleanTextSplitting <- function(data, split=FALSE, stemWords=TRUE, noStemLast=FALSE) {
     d <- unlist(strsplit(data, "[.?!]"))
     sapply(d, cleanPhrase, split, stemWords, noStemLast)
@@ -121,13 +139,11 @@ cleanFiles <- function (inFile, outFile, step=1000, progressCount = 10000) {
     while (j < end) {
         j <- i + step
         if (j > end) { j <- end }
-#         cleaned <- sapply(data$V1[i:j], cleanText, TRUE, noStemLast=TRUE)
         cleaned <- unlist(mclapply(data$V1[i:j], cleanText, TRUE, noStemLast=TRUE, mc.cores=getOption("mc.cores", numCores)))
         cleaned <- cleaned[cleaned != ""]
         writeLines(cleaned, con=conOut)
         i <- i + step + 1
         msg_cnt <- msg_cnt + step
-        #cat("msg_cnt = ", msg_cnt, "   progressCount = ", progressCount, "\n")
         if (msg_cnt >= progressCount) {
             cat(j, " lines have been processed -", date(),"\n")
             msg_cnt <- 1
@@ -145,6 +161,9 @@ cleanFile <- function(f, step=1000, progressCount=10000) {
     cleanFiles(f, outF, step, progressCount)
 }
 
+
+
+# - COUNT AND FREQUENCY FUNCTIONS - #
 getWordCounts <- function(file) {
     d <- fread(file, sep="\n",sep2 = " ", header=FALSE)
     d2 <- sapply(d, strsplit, " ") %>% unlist %>% tolower
@@ -153,33 +172,6 @@ getWordCounts <- function(file) {
     d3 <- d3[V1 != ""]
     d3 <- d3[order(-count)]
 }
-
-
-# If can do multicore and have plenty of memory
-library(parallel)
-numCores <- 5       # Number of cores you want to use
-
-
-
-
-####   deprecated Clean txt calls
-for (f in list.files("data/split/", pattern = "twitter", full.names = FALSE)) {
-    if (grepl("twitter_1.txt", f)) { next }
-    
-    cat(date(), "- Cleaning file", f, "\n")
-    outF <- paste("data/cleaned/", gsub(".txt", "_clean.txt", f), sep="")
-    
-    data <- fread(paste("data/split/", f, sep=""), sep="\n", header=FALSE)
-    cln <- unlist(mclapply(f, cleanText, TRUE, mc.cores=getOption("mc.cores", numCores)))
-    
-    conOut <- file(outF, "w")
-    write(cln, out)
-    close(con)
-}
-
-
-#cleanFiles("en_us/en_US.blogs.txt", "data/cleaned/blog_clean.txt")
-#cleanFiles("en_us/en_US.news.txt", "data/cleaned/news_clean.txt")
 
 createTableOfFrequencies <- function(x) {
     n <- names(x)
@@ -200,17 +192,39 @@ combineCountTables <- function (t1, t2=data.table()) {
     t_l
 }
 
-#Deprecated
-createTableOfCounts <- function(x, id="default") {
+getWordCounts <- function(in_dt, cum_dt = data.table(), last_word_only = FALSE) {
+    if (last_word_only) {
+        temp <- strsplit(in_dt$V1, split = " ") %>%
+            sapply(last) %>%
+            data.table
+    }  else {
+        temp <- as.matrix(in_dt) %>%
+            as.vector %>%
+            strsplit(split = " ") %>%
+            unlist %>%
+            data.table
+    }
+    temp <- temp[,count := .N, by=V1]
+    temp <- unique(temp, by="V1")
+    if (dim(cum_dt)[1] == 0) {
+        cum_dt <- copy(temp)
+    } else {
+        cum_dt <- merge(cum_dt, temp, all=TRUE, by="V1")
+        cum_dt[is.na(cum_dt)] <- 0
+        cum_dt <- cum_dt[, count := count.x + count.y]
+        cum_dt <- cum_dt[,c(1,4), with=FALSE]
+    }
     
-    df <- createTableOfFrequencies(x) %>%
-        mutate(src = id) %>%
-        arrange(desc(count)) %>%
-        mutate(index = seq_len(length(count)), cum_count = cumsum(count))
+    cum_dt
+}
+
+read.And.Get.Counts <- function(x, cum_cnts, last_word_only=FALSE) {
+    f <- fread(x, sep="\n", header=FALSE)
+    getWordCounts(f, cum_cnts, last_word_only)
 }
 
 
-
+# - NGRAM CREATION FUNCTIONS - #
 createNGrams <- function (inFile, outFile, nGramType=2, step=100, progressCount=10000) {
     #con <- file(inFile,"r")
     d <- fread(inFile, sep="\n", header=FALSE)
@@ -229,7 +243,6 @@ createNGrams <- function (inFile, outFile, nGramType=2, step=100, progressCount=
         writeLines(grams, con=conOut)
         i <- i + step + 1
         msg_cnt <- msg_cnt + step
-#         cat("msg_cnt = ", msg_cnt, "   progressCount = ", progressCount, "\n")
         if (msg_cnt >= progressCount) {
             cat(j, "  lines have been processed", "\n")
             msg_cnt <- 1
@@ -238,7 +251,6 @@ createNGrams <- function (inFile, outFile, nGramType=2, step=100, progressCount=
     close(conOut)
     cat("All", j, "lines have been processed", "\n")
 }
-
 
 # Create NGrams using only the last portion of line
 create3Grams <- function(data) {
@@ -249,12 +261,23 @@ create3Grams <- function(data) {
     out_data <- character(0)
     n <- length(data) - 1
     for (j in n:2) {
-#         for (i in (j-1):1) {
-            out_data <- append(out_data, paste(data[j-1], data[j], data[length(data)], sep = " "))
-#             out_data <- append(out_data, paste(data[j-2], data[j], data[length(data)], sep = " "))
-#         }
+        out_data <- append(out_data, paste(data[j-1], data[j], data[length(data)], sep = " "))
     }
     out_data
+}
+
+createNGramsFromVector <- function(v, nGramType=2, progressCount=10000) {
+    v <- gsub("//", "/", v)
+    outF <- paste("data/ngrams/",  strsplit(v, split="/") %>% unlist %>% last, sep="") %>% 
+        function(x) gsub("clean", paste(nGramType, "gram", sep=""), x)
+    createNGrams(v, outF, nGramType, progressCount)
+}
+
+create3GramsFromVector <- function(v, progressCount=10000) {
+    v <- gsub("//", "/", v)
+    outF <- paste("data/ngrams/",  strsplit(v, split="/") %>% unlist %>% last, sep="") %>% 
+        function(x) gsub("clean", "clean_end", x)
+    create3GramFromEnd(v, outF, progressCount)
 }
 
 create3GramFromEnd <- function(inFile, outFile, progressCount=10000) {
@@ -285,83 +308,13 @@ create3GramFromEnd <- function(inFile, outFile, progressCount=10000) {
 }
 
 
-# Deprecated
-processCleanedFile <- function (inFile, outFile, identifier="none", nGramType=2, progressCount=10000) {
-    nGramFile <- paste("data/temp/", outFile, ".txt", sep="")
-    createNGrams(inFile, nGramFile, nGramType=2, progressCount)
-    grams <- fread(nGramFile, sep="\n", header=FALSE)
-    table <- createTableOfCounts(grams, identifier)
-    tableFile <-paste("data/tables/t_", outFile, ".txt", sep="")
-    write.table(table, tableFile)
-    tableObj <- paste("data/tables/t_", outFile, ".RData", sep="")
-    save(table, file=tableObj)
-}
 
-# Deprecated
-for (f in list.files("data/cleaned/", pattern = "twitter", full.names = data)) {
-    cat(date(), "- Processing file", f, "\n")
-    outF <- strsplit(f, "/") %>% function(x) x[length(x)] %>%  gsub(".txt", "_clean.txt", x)
-    #cleanFiles(paste("data/split/", f, sep=""), paste("data/clean/", outF, sep="") )
-}
-
-# Deprecated
-createMatchTable <- function(t, dict) {
-    require(qdap)
-    setkey(t, word)
-    t$word <- mgsub(dict$word, dict$id, t$word)
-    t
-}
-
-# Deprecated
-createDictionary <- function(t) {
-    wrds <- strsplit(t$word, split =" ") %>% unlist %>% unique 
-    dict <- data.table(id = seq_len(length(wrds)), word = wrds)
-}
-
-# Use only if having a single table
-compressTable <- function(t) {
-    wrds <- strsplit(t$word, split=" ") %>% unlist
-    dict <- unique(wrds)
-    m <- matrix(wrds, ncol=2, byrow=TRUE)
-    V1 <- match(m[,1], dict)
-    V2 <- match(m[,2], dict)
-    tbl <- data.table(w1 = V1, w2 = V2, count = t$count)
-    l <- list(tbl, dict)
-}
-
+# - COMPRESSION FUNCTIONS - #
 compressTableWithWordMapping <- function(t, w) {
     n <- names(t)
     n <- n[1:(length(n)-3)]
     tOut <-t[,(n):= lapply(.SD, match, w), .SDcols=n]
 }
-
-
-
-
-createNGramsFromVector <- function(v, nGramType=2, progressCount=10000) {
-    v <- gsub("//", "/", v)
-    outF <- paste("data/ngrams/",  strsplit(v, split="/") %>% unlist %>% last, sep="") %>% 
-        function(x) gsub("clean", paste(nGramType, "gram", sep=""), x)
-    createNGrams(v, outF, nGramType, progressCount)
-}
-
-create3GramsFromVector <- function(v, progressCount=10000) {
-    v <- gsub("//", "/", v)
-    outF <- paste("data/ngrams/",  strsplit(v, split="/") %>% unlist %>% last, sep="") %>% 
-        function(x) gsub("clean", "clean_end", x)
-    create3GramFromEnd(v, outF, progressCount)
-}
-
-
-
-### Deprecated - Crate Ngrams
-inF <- c("data/cleaned/blogs_1_clean.txt")
-inF <- list.files("data/cleaned/", pattern="_[34]_clean", full.names = TRUE)
-sapply(inF, createNGramsFromVector, nGramType=2)
-sapply(inF, createNGramsFromVector, nGramType=3)
-sapply(inF, createNGramsFromVector, nGramType=4)
-
-
 
 addToDecode <- function(dt, out=character(0)) {
     m <- as.matrix(dt)
@@ -375,44 +328,10 @@ addToDecode <- function(dt, out=character(0)) {
 }
 
 
-getLastWord <- function(in_wrds) {
-    last_wrd <- strsplit(in_wrds, split=" ") %>%
-        unlist %>%
-        last
-    last_wrd
-}
 
-getWordCounts <- function(in_dt, cum_dt = data.table(), last_word_only = FALSE) {
-    if (last_word_only) {
-#         temp <- sapply(in_dt$V1, getLastWord) %>%
-#             data.table
-        temp <- strsplit(in_dt$V1, split = " ") %>%
-            sapply(last) %>%
-            data.table
-    }  else {
-        temp <- as.matrix(in_dt) %>%
-            as.vector %>%
-            strsplit(split = " ") %>%
-            unlist %>%
-            data.table
-    }
-    temp <- temp[,count := .N, by=V1]
-#     print(head(temp))    # TEST
-    temp <- unique(temp, by="V1")
-#     setkey(temp, V1)
-    if (dim(cum_dt)[1] == 0) {
-        cum_dt <- copy(temp)
-    } else {
-#         cum_dt <- merge(cum_dt, temp, all=TRUE, by = names(cum_dt[1]))
-        cum_dt <- merge(cum_dt, temp, all=TRUE, by="V1")
-#         print(head(cum_dt))    # TEST
-        cum_dt[is.na(cum_dt)] <- 0
-        cum_dt <- cum_dt[, count := count.x + count.y]
-        cum_dt <- cum_dt[,c(1,4), with=FALSE]
-    }
 
-    cum_dt
-}
+
+#### -----  PROCESSING ----- ####
 
 
 
@@ -435,11 +354,6 @@ sapply(inF, create3GramsFromVector)
 #files <- list.files("data/ngrams/", pattern="twitter_._2gram", full.names = TRUE)
 
 
-read.And.Get.Counts <- function(x, cum_cnts, last_word_only=FALSE) {
-    f <- fread(x, sep="\n", header=FALSE)
-    getWordCounts(f, cum_cnts, last_word_only)
-}
-
 
 ### CREATE WORD COUNTS
 files <- list.files("data/cleaned/", pattern="(blogs|twitter).*.txt", full.names = TRUE)
@@ -458,7 +372,7 @@ for (f in files) {
     last_wrds <- read.And.Get.Counts(f, last_wrds, last_word_only=TRUE)
 }
 save(last_wrds, file="data/tables/last_word_counts.RData")
-# call getWordCounts(fileData, cummulative.data.table)
+
 
 
 # CREATE DECODE TABLE
@@ -475,6 +389,7 @@ for (f in files) {
 save(wrds, file="data/tables/decode.RData")
 rm(dt)
 gc()
+
 
 
 
@@ -518,7 +433,103 @@ save(bigrams, file="data/tables/bigrams_1.RData")
 trigrams <- outDt   # when trigrams
 save(trigrams, file="data/tables/trigrams.RData")
 
-t# get eh counts for each
+
+### Reduce data used
+
+## TO DO ##
+
+
+
+gc()
+
+
+
+
+#### -----  DEPRECATED CODE SECTION  ----- ####
+
+####   deprecated Clean txt calls
+for (f in list.files("data/split/", pattern = "twitter", full.names = FALSE)) {
+    if (grepl("twitter_1.txt", f)) { next }
+    
+    cat(date(), "- Cleaning file", f, "\n")
+    outF <- paste("data/cleaned/", gsub(".txt", "_clean.txt", f), sep="")
+    
+    data <- fread(paste("data/split/", f, sep=""), sep="\n", header=FALSE)
+    cln <- unlist(mclapply(f, cleanText, TRUE, mc.cores=getOption("mc.cores", numCores)))
+    
+    conOut <- file(outF, "w")
+    write(cln, out)
+    close(con)
+}
+
+
+#cleanFiles("en_us/en_US.blogs.txt", "data/cleaned/blog_clean.txt")
+#cleanFiles("en_us/en_US.news.txt", "data/cleaned/news_clean.txt")
+
+#Deprecated
+createTableOfCounts <- function(x, id="default") {
+    
+    df <- createTableOfFrequencies(x) %>%
+        mutate(src = id) %>%
+        arrange(desc(count)) %>%
+        mutate(index = seq_len(length(count)), cum_count = cumsum(count))
+}
+
+# Deprecated
+processCleanedFile <- function (inFile, outFile, identifier="none", nGramType=2, progressCount=10000) {
+    nGramFile <- paste("data/temp/", outFile, ".txt", sep="")
+    createNGrams(inFile, nGramFile, nGramType=2, progressCount)
+    grams <- fread(nGramFile, sep="\n", header=FALSE)
+    table <- createTableOfCounts(grams, identifier)
+    tableFile <-paste("data/tables/t_", outFile, ".txt", sep="")
+    write.table(table, tableFile)
+    tableObj <- paste("data/tables/t_", outFile, ".RData", sep="")
+    save(table, file=tableObj)
+}
+
+# Deprecated
+for (f in list.files("data/cleaned/", pattern = "twitter", full.names = data)) {
+    cat(date(), "- Processing file", f, "\n")
+    outF <- strsplit(f, "/") %>% function(x) x[length(x)] %>%  gsub(".txt", "_clean.txt", x)
+    #cleanFiles(paste("data/split/", f, sep=""), paste("data/clean/", outF, sep="") )
+}
+
+# Deprecated
+createMatchTable <- function(t, dict) {
+    require(qdap)
+    setkey(t, word)
+    t$word <- mgsub(dict$word, dict$id, t$word)
+    t
+}
+
+# Deprecated
+createDictionary <- function(t) {
+    wrds <- strsplit(t$word, split =" ") %>% unlist %>% unique 
+    dict <- data.table(id = seq_len(length(wrds)), word = wrds)
+}
+
+# Deprecated - Crate Ngrams
+inF <- c("data/cleaned/blogs_1_clean.txt")
+inF <- list.files("data/cleaned/", pattern="_[34]_clean", full.names = TRUE)
+sapply(inF, createNGramsFromVector, nGramType=2)
+sapply(inF, createNGramsFromVector, nGramType=3)
+sapply(inF, createNGramsFromVector, nGramType=4)
+
+# Deprecated
+# Use only if having a single table
+compressTable <- function(t) {
+    wrds <- strsplit(t$word, split=" ") %>% unlist
+    dict <- unique(wrds)
+    m <- matrix(wrds, ncol=2, byrow=TRUE)
+    V1 <- match(m[,1], dict)
+    V2 <- match(m[,2], dict)
+    tbl <- data.table(w1 = V1, w2 = V2, count = t$count)
+    l <- list(tbl, dict)
+}
+
+
+# Deprecated
+# get the counts for each
 cnts <- data.table(outDt$count)[,.N, keyby=outDt$count][, prcnt := N/sum(N)]
 
 createNGrams("data/cleaned/twitter_1_clean.txt", "data/temp/bi_twit_1.txt", nGramType = 2,progressCount = 10000)
@@ -533,6 +544,3 @@ tri_table2 <- createTableOfCounts(trigrams, "twitter")
 save(tri_table2, file="data/tables/t_tri_twit_`.RDdata")
 write.table(tri_table2, "data/tables/t_trigram_twit_1.txt")
 rm(trigrams)
-
-gc()
-
