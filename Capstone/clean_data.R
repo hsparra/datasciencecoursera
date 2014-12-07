@@ -187,15 +187,15 @@ createTableOfFrequencies <- function(x, count_name = "bi_cnt", by_cols = c("V1",
     wrds <- wrds[,ratio := count/bi_cnt]
 }
 
-combineCountTables <- function (t1, t2=data.table()) {
+combineCountTables <- function (t1, ngram=3, t2=data.table()) {
     if (dim(t2)[1] == 0) { return(t1)}
-    m_cols <- names(t1) %>% function(x) x[1:(length(x) -3)]
+    m_cols <- names(t1) %>% function(x) x[1:(length(x) - ngram)]
     t <- merge(t1, t2, by=m_cols, all = TRUE)
     t[is.na(t)] <- 0
     t_l <- t[, count := count.x + count.y]
     t_l <- t[, bi_cnt := bi_cnt.x + bi_cnt.y]
     t_l <- t[, ratio := count/bi_cnt]
-    t_l <- t_l[,-c(4:9), with=FALSE]
+    t_l <- t_l[,c(1:ngram, dim(t_l)[2]), with=FALSE]
     t_l
 }
 
@@ -387,7 +387,7 @@ save(last_wrds, file="data/tables/last_word_counts.RData")
 # CREATE DECODE TABLE
 # Note: Do not need to do if have word counts table (can use first column)
 # Only need to process the bigram files since they already contain all the words
-files <- list.files("data/ngrams/", pattern="(blogs|twitter).*2gram.txt", full.names = TRUE)
+files <- list.files("data/ngrams/4grams", full.names = TRUE)
 wrds <- character(0)
 for (f in files) {
     cat("Processing file:", f, "\n")
@@ -403,12 +403,10 @@ gc()
 
 
 # CREATE COUNT TABLES AND COMPRESS
-files <- list.files("data/ngrams/endLine_3grams/", full.names = TRUE)
-files <- list.files("data/ngrams/", pattern="_[3456]_",full.names = TRUE)
-files <- list.files("data/ngrams/", pattern="(blogs|twitter).*3gram", full.names = TRUE)
+files <- list.files("data/ngrams/4grams", pattern="(blogs|twitter)", full.names = TRUE)
 
 for (f in files) {
-    cat("Processing file:", f, "\n")
+    cat("Processing file:", f, "   ", date(),"\n")
     dt <- fread(f, header=FALSE)
     dt <- createTableOfFrequencies(dt)
     dt <- compressTableWithWordMapping(dt, wrds)
@@ -423,10 +421,7 @@ for (f in files) {
 
 
 # CREATE COMBINED TABLE FOR MATCHING
-files <- list.files("data/tables/", pattern="blogs.*RData", full.names=TRUE) 
-files <- list.files("data/tables/", pattern="_1_2gram.RData", full.names=TRUE) 
-files <- list.files("data/tables/", pattern="_2gram.RData", full.names=TRUE)
-files <- list.files("data/tables/", pattern="_3gram.*RData", full.names=TRUE)
+files <- list.files("data/tables/4grams", pattern="_4gram.*RData", full.names=TRUE)
 
 outDt <- data.table()
 for (f in files) {
@@ -436,11 +431,8 @@ for (f in files) {
     outDt <- combineCountTables(dt, outDt)
 }
 
-bigrams <- outDt   # when bigrams
-save(bigrams, file="data/tables/bigrams_1.RData")
-
-trigrams <- outDt   # when trigrams
-save(trigrams, file="data/tables/trigrams.RData")
+matchTable <- outDt
+save(matchTable, file="data/tables/4grams/all4grams.RData")
 
 
 ### Reduce data used
