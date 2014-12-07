@@ -173,14 +173,16 @@ getWordCounts <- function(file) {
     d3 <- d3[order(-count)]
 }
 
-createTableOfFrequencies <- function(x) {
 addCountColumn <- function(x, count_name = "bi_cnt", by_cols = c("V1", "V2")) {
     expr <- parse( text = paste0(count_name, ":=.N"))
     x <- x[, eval(expr), by=by_cols]
     x
 }
+
+createTableOfFrequencies <- function(x, count_name = "bi_cnt", by_cols = c("V1","V2")) {
     n <- names(x)
-    x <- x[,bi_cnt := .N, by=c("V1", "V2")]
+#     x <- x[,bi_cnt := .N, by=c("V1", "V2")]
+    x <- addCountColumn(x, count_name, by_cols)
     wrds <- unique(x[,count := .N, by=n], by=n)
     wrds <- wrds[,ratio := count/bi_cnt]
 }
@@ -229,6 +231,8 @@ read.And.Get.Counts <- function(x, cum_cnts, last_word_only=FALSE) {
 }
 
 
+
+
 # - NGRAM CREATION FUNCTIONS - #
 createNGrams <- function (inFile, outFile, nGramType=2, step=100, progressCount=10000) {
     #con <- file(inFile,"r")
@@ -258,16 +262,14 @@ createNGrams <- function (inFile, outFile, nGramType=2, step=100, progressCount=
 }
 
 # Create NGrams using only the last portion of line
-create3Grams <- function(data) {
+createNGramFromEnd <- function(data, ngram=3) {
     data <- strsplit(data, " ") %>% unlist
-    if length(data <= 3) {
+    if (length(data) <= ngram) {
         return("")
     }
-    out_data <- character(0)
-    n <- length(data) - 1
-    for (j in n:2) {
-        out_data <- append(out_data, paste(data[j-1], data[j], data[length(data)], sep = " "))
-    }
+    n <- length(data) - ngram + 1
+    out_data <- paste(data[n:length(data)], collapse = " ")
+    
     out_data
 }
 
@@ -278,14 +280,15 @@ createNGramsFromVector <- function(v, nGramType=2, progressCount=10000) {
     createNGrams(v, outF, nGramType, progressCount)
 }
 
-create3GramsFromVector <- function(v, progressCount=10000) {
+createNGramsFromEndGivenFiles <- function(v, ngram=3, progressCount=10000) {
     v <- gsub("//", "/", v)
+    sub_val <- paste0(ngram, "gram_end")
     outF <- paste("data/ngrams/",  strsplit(v, split="/") %>% unlist %>% last, sep="") %>% 
-        function(x) gsub("clean", "clean_end", x)
-    create3GramFromEnd(v, outF, progressCount)
+        function(x) gsub("clean", sub_val, x)
+    createNGramsFromEndForFile(v, outF, ngram, progressCount)
 }
 
-create3GramFromEnd <- function(inFile, outFile, progressCount=10000) {
+createNGramsFromEndForFile <- function(inFile, outFile, ngram=3, progressCount=10000) {
     #con <- file(inFile,"r")
     d <- fread(inFile, sep="\n", header=FALSE)
     end <- length(d$V1)
@@ -296,7 +299,8 @@ create3GramFromEnd <- function(inFile, outFile, progressCount=10000) {
     i <- 1
     msg_cnt <- 1
     while (i < end) {
-        grams <- create3Grams(d$V1[i])
+#         grams <- create3Grams(d$V1[i])
+        grams <- createNGramFromEnd(d$V1[i], ngram)
         i <- i + 1
         msg_cnt <- msg_cnt + 1
         if (nchar(grams[1])[1] == 0) { 
@@ -355,7 +359,7 @@ inF <- list.files("data/cleaned/", pattern="(blogs|twitter)_", full.names = TRUE
 sapply(inF, createNGramsFromVector, nGramType=2)
 sapply(inF, createNGramsFromVector, nGramType=3)
 
-sapply(inF, create3GramsFromVector)
+sapply(inF, createNGramsFromEndGivenFiles, ngram=4)
 #files <- list.files("data/ngrams/", pattern="twitter_._2gram", full.names = TRUE)
 
 
@@ -422,7 +426,7 @@ for (f in files) {
 files <- list.files("data/tables/", pattern="blogs.*RData", full.names=TRUE) 
 files <- list.files("data/tables/", pattern="_1_2gram.RData", full.names=TRUE) 
 files <- list.files("data/tables/", pattern="_2gram.RData", full.names=TRUE)
-files <- list.files("data/tables/", pattern="_3gram.RData", full.names=TRUE)
+files <- list.files("data/tables/", pattern="_3gram.*RData", full.names=TRUE)
 
 outDt <- data.table()
 for (f in files) {
