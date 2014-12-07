@@ -129,7 +129,7 @@ triMatchAll <- function(str, tbl, dict, n=5) {
         matches <- tbl[V2 == keys[length(keys)]]
     }
 
-#     matches <- matches[,bi_cnt := .N, by=c("V1","V2")]
+    matches <- matches[,bi_cnt := .N, by=c("V1","V2")]
     matches <- unique(matches[, m_cnt := sum(count), by=V3], by="V3")
     # Select the top 2 for each V1 match - this will give the highest counts
     # for the V1 & V2 combos with the corresponding V3 value
@@ -158,3 +158,18 @@ quickMatch <- function(x, n=5) {
     triMatch(x, trigrams, wrds, n)
 }
 
+q4Match <- function(inText, matchTable, wrds) {
+    x <- cleanText(inText)
+    z <- matchTable[V3 == match(x, wrds)]
+    z1 <- z[V2 == match(x, wrds)]
+    if (dim(z1)[1] > 0) {
+        z <- z1
+    }
+    z1 <- z[V1 == match(x, wrds)]
+    if (dim(z1)[1] > 0) {
+        z <- z1
+    }
+    z <- z[order(-ratio2, -ratio, -logp)]
+    pred <- wrds[z$V4[1]] %>% na.omit
+    pred
+}
