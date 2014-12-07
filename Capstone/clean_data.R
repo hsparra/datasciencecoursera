@@ -174,6 +174,11 @@ getWordCounts <- function(file) {
 }
 
 createTableOfFrequencies <- function(x) {
+addCountColumn <- function(x, count_name = "bi_cnt", by_cols = c("V1", "V2")) {
+    expr <- parse( text = paste0(count_name, ":=.N"))
+    x <- x[, eval(expr), by=by_cols]
+    x
+}
     n <- names(x)
     x <- x[,bi_cnt := .N, by=c("V1", "V2")]
     wrds <- unique(x[,count := .N, by=n], by=n)
