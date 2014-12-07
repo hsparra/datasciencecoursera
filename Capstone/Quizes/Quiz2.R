@@ -97,11 +97,13 @@ matches <- returnMatches("some sring", tri_table)
 runTest <- function() {
     str <- "The guy in front of me just bought a pound of bacon, a bouquet, and a case of"
     pos <- c("cheese", "beer", "soda", "pretzels")
+    ans <- "beer"
     print("Q1. - should get beer")
     findBestMatches(str, pos)
     
     str <- "You're the reason why I smile everyday. Can you follow me please? It would mean the"
     pos <- c("universe", "world", "most", "best")
+    ans <- "world"
     print("Q2. - should get world")
     findBestMatches(str, pos)
     
