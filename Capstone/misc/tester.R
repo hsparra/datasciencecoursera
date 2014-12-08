@@ -7,7 +7,7 @@ test2 <- copy(test[100:200])
 
 temp <- sapply(test2, strsplit, split= " ")
 tst_ans <-  sapply(temp, last)
-# tst_ans <- gsub("[.?!]", "", tst_ans)
+tst_ans <- gsub("[[:punct:]]", "", tst_ans)
 
 tst_input <- sapply(temp, allButLast)
 
