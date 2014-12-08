@@ -1,9 +1,9 @@
 source("misc/predictor_old.R")
-source(shinyApp/predictor.R)
+source("shinyApp/predictor.R")
 
-test <- fread("data/split/twitter_8.txt", sep="\n", header=FALSE)
+test <- fread("data/split/blogs_1.txt", sep="\n", header=FALSE, nrow=1000)
 
-test2 <- copy(test[2:300])
+test2 <- copy(test[100:200])
 
 temp <- sapply(test2, strsplit, split= " ")
 tst_ans <-  sapply(temp, last)
