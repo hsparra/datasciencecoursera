@@ -58,3 +58,13 @@ wrds_sm <- wrd_cnts[count >= 200]
 dim(wrds_sm)
 inS <- paste(wrds_sm$V1, collapse=" ")
 system.time(y <- getPOS(inS))
+
+
+
+## DISTRIBUTION of logp for all
+require(ggplot2)
+x <- seq(from = -20, to=-70, by=-1)
+log_grps <- table(cut(matchTable2$logpAll, x))
+df <- data.frame(log_grps)
+df$val <- sort(x)[1:50]
+ggplot(df, aes(x=val, y=Freq)) + geom_point()
