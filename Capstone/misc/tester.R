@@ -1,13 +1,13 @@
 source("misc/predictor_old.R")
 source(shinyApp/predictor.R)
 
-test <- fread("data/split/twitter_8.txt", sep="\n", header=FALSE)
+test <- fread("data/split/blogs_1.txt", sep="\n", header=FALSE)
 
-test2 <- copy(test[2:300])
+test2 <- copy(test[100:200])
 
 temp <- sapply(test2, strsplit, split= " ")
 tst_ans <-  sapply(temp, last)
-tst_ans <- gsub("[.?!]", "", tst_ans)
+# tst_ans <- gsub("[.?!]", "", tst_ans)
 
 tst_input <- sapply(temp, allButLast)
 
@@ -50,7 +50,7 @@ allButLast <- function(x) {
 
 
 qMatch <- function(inText) {
-    x <- cleanText(inText)
+    x <- cleanText(inText, noStemLast = FALSE)
     z <- matchTable[V3 == match(x, wrds)]
     z1 <- z[V2 == match(x, wrds)]
     if (dim(z1)[1] > 0) {
@@ -60,7 +60,7 @@ qMatch <- function(inText) {
     if (dim(z1)[1] > 0) {
         z <- z1
     }
-    z <- z[order(-ratio2, -ratio, -logp)]
+    z <- z[order(-logV4, -logAll, -count)]
     pred <- wrds[z$V4[1]] %>% na.omit
     pred
 }
