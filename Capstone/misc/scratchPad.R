@@ -67,7 +67,7 @@ x <- seq(from = -20, to=-70, by=-1)
 log_grps <- table(cut(matchTable2$logpAll, x))
 df <- data.frame(log_grps)
 df$val <- sort(x)[1:50]
-ggplot(df, aes(x=val, y=Freq)) + geom_point()
+ggplot(df, aes(x=val, y=Freq)) + geom_point() + xlab("logpAll")
 
 
 
@@ -77,4 +77,10 @@ x <- seq(from=.05, to=.55, by=.01)
 v4Ratio <- table(cut(matchTable2$pV4_over_All, x))
 df2 <- data.frame(v4Ratio)
 df2$val <- x[1:50]
-ggplot(df2, aes(x=val, y=Freq)) + geom_point()
+ggplot(df2, aes(x=val, y=Freq)) + geom_point() + xlab("logpV4 / logpAll")
+
+x <- seq(from=-17.0, to=-4.5, by=.5)
+v4Dist <- table(cut(matchTable2$logpV4, x))
+df3 <- data.frame(v4Dist)
+df3$val <- x[1:25]
+ggplot(df3, aes(x=val, y=Freq)) + geom_point() + xlab("logpV4")
