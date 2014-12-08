@@ -68,3 +68,13 @@ log_grps <- table(cut(matchTable2$logpAll, x))
 df <- data.frame(log_grps)
 df$val <- sort(x)[1:50]
 ggplot(df, aes(x=val, y=Freq)) + geom_point()
+
+
+
+# DISTRIBUTION of logpV3 to logpAll
+matchTable2[, pV4_over_All := logpV4/logpAll]
+x <- seq(from=.05, to=.55, by=.01)
+v4Ratio <- table(cut(matchTable2$pV4_over_All, x))
+df2 <- data.frame(v4Ratio)
+df2$val <- x[1:50]
+ggplot(df2, aes(x=val, y=Freq)) + geom_point()
