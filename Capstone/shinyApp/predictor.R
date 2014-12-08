@@ -37,7 +37,7 @@ cleanTextForMatch<- function(data) {
 
 
 q4Match <- function(inText, matchTable, wrds, maxToReturn=1) {
-    x <- cleanText(inText)
+    x <- cleanTextForMatch(inText)
     n <- length(x)
     z <- matchTable[V3 == match(x[n], wrds) ]
     z1 <- z[V2 == match(x[(n-1)], wrds) ]
