@@ -1,6 +1,10 @@
 source("misc/predictor_old.R")
 source(shinyApp/predictor.R)
 
+load("data/tables/_rweka/match4gram_gte7.RData")
+load("data/tables/_rweka/match3grams_gt6.RData")
+load("data/tables/_rweka/match2gram_gt5_80prct.RData")
+
 test <- fread("data/split/blogs_1.txt", sep="\n", header=FALSE)
 
 test2 <- copy(test[100:200])
@@ -10,6 +14,12 @@ tst_ans <-  sapply(temp, last)
 tst_ans <- gsub("[[:punct:]]", "", tst_ans)
 
 tst_input <- sapply(temp, allButLast)
+
+system.time(predictions <- sapply(tst_input, qMatch, match4_sm, match3_sm, match2, wrds, maxToReturn=1))
+
+names(predictions) <- NULL
+dt <- data.table(pred=predictions, ans=tst_ans)
+correct_exact <- sum(first_pred == tst_ans, na.rm=TRUE)
 
 # 4-gram prediction
 # system.time(predictionsÇΩ_exact <- sapply(tst_input, q4Match, matchTable, wrds, maxToReturn=3))
