@@ -89,7 +89,7 @@ cleanTextSplitting <- function(data, split=FALSE, stemWords=TRUE, noStemLast=FAL
     sapply(d, cleanPhrase, split, stemWords, noStemLast)
 }
 
-cleanText <- function(data, split=FALSE, stemWords=TRUE, noStemLast=TRUE) {
+cleanText <- function(data, split=FALSE, removeStopWords=TRUE, stemWords=TRUE, noStemLast=TRUE) {
     data <- unlist(strsplit(data, split=" "))
     if (noStemLast) {
         lastWord <- data[length(data)]
@@ -97,8 +97,11 @@ cleanText <- function(data, split=FALSE, stemWords=TRUE, noStemLast=TRUE) {
     }
     data <- tolower(data)
     data <- gsub("’", "'", data)   # replace right single quote mark with chracter used in stopwords()
-    data <- remove_stopwords(data, stopwords())
-    data <- gsub("[[:punct:]]", " ", data)
+    if (removeStopWords) {
+        data <- remove_stopwords(data, stopwords())
+    }
+
+#     data <- gsub("[[:punct:]]", " ", data)
     data <- gsub("[^a-z]", " ", data)
     data <- unlist(strsplit(data, split=" "))
     data <- data[ data != " "]
@@ -109,18 +112,20 @@ cleanText <- function(data, split=FALSE, stemWords=TRUE, noStemLast=TRUE) {
     if (stemWords) {
         data <- wordStem(data)
     }
-    data <- remove_stopwords(data, stopwords())   # Remove stopwords created by stemming
+    if (removeStopWords) {
+        data <- remove_stopwords(data, stopwords())   # Remove stopwords created by stemming
+    }
     if (noStemLast) {
         lastWord <- gsub("[.?!]", "", lastWord)
         lastWord <- gsub("[^A-Za-z]", "", lastWord)
         data <- c(data, lastWord)
     }
     
-    data <- gsub("(?<=[^[se]])s$", "", data, perl = TRUE)    # Remove at end of word if not preceded by an s
+#     data <- gsub("(?<=[^[se]])s$", "", data, perl = TRUE)    # Remove at end of word if not preceded by an s
     data <- data[data != ""]
-    if (length(data) < 4) {
-        return("")
-    }
+#     if (length(data) < 4) {
+#         return("")
+#     }
     if (split) {
         data <- paste(data, collapse = " ")
     } else {
@@ -128,7 +133,7 @@ cleanText <- function(data, split=FALSE, stemWords=TRUE, noStemLast=TRUE) {
             function (x) x[ x != ""]
     }
     
-    data <- gsub("[ ]{2,}", " ", data)
+#     data <- gsub("[ ]{2,}", " ", data)
     data <- gsub("^[ ]+", "", data)
     data
 }
@@ -147,7 +152,9 @@ cleanFiles <- function (inFile, outFile, step=1000, progressCount = 10000) {
     while (j < end) {
         j <- i + step
         if (j > end) { j <- end }
-        cleaned <- unlist(mclapply(data$V1[i:j], cleanText, TRUE, noStemLast=TRUE, mc.cores=getOption("mc.cores", numCores)))
+#         cleaned <- unlist(mclapply(data$V1[i:j], cleanText, TRUE, noStemLast=TRUE, mc.cores=getOption("mc.cores", numCores)))
+#         cleaned <- unlist(mclapply(data$V1[i:j], cleanText, split=TRUE, removeStopWords=FALSE, stemWords=FALSE, noStemLast=FALSE, mc.cores=getOption("mc.cores", numCores)))
+        cleaned <- unlist(sapply(data$V1[i:j], cleanText, split=TRUE, removeStopWords=FALSE, stemWords=FALSE, noStemLast=FALSE))
         cleaned <- cleaned[cleaned != ""]
         i <- i + step + 1
         msg_cnt <- msg_cnt + step
@@ -369,6 +376,7 @@ inF <- c("data/cleaned/blogs_1_clean.txt")
 inF <- list.files("data/cleaned/", pattern="(blogs|twitter)_", full.names = TRUE)
 sapply(inF, createNGramsFromVector, nGramType=2)
 sapply(inF, createNGramsFromVector, nGramType=3)
+sapply(inF, createNGramsFromVector, nGramType=4)
 
 sapply(inF, createNGramsFromEndGivenFiles, ngram=4)
 # for multicore
@@ -416,7 +424,8 @@ gc()
 
 
 # CREATE COUNT TABLES AND COMPRESS
-files <- list.files("data/ngrams/4grams", pattern="(blogs|twitter)", full.names = TRUE)
+files <- list.files("data/ngrams/_rweka/2grams/", pattern="(blogs|twitter)", full.names = TRUE)
+files <- list.files("data/ngrams/_rweka/4grams/", pattern="(blogs|twitter)", full.names = TRUE)
 
 for (f in files) {
     cat("Processing file:", f, "   ", date(),"\n")
@@ -434,7 +443,7 @@ for (f in files) {
 
 
 # CREATE COMBINED TABLE FOR MATCHING
-files <- list.files("data/tables/4grams", pattern="(blog|twitter).*_4gram.*RData", full.names=TRUE)
+files <- list.files("data/tables/_rweka/4grams/", pattern="(blog|twitter).*RData", full.names=TRUE)
 
 outDt <- data.table()
 for (f in files) {
