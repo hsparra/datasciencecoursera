@@ -84,3 +84,16 @@ v4Dist <- table(cut(matchTable2$logpV4, x))
 df3 <- data.frame(v4Dist)
 df3$val <- x[1:25]
 ggplot(df3, aes(x=val, y=Freq)) + geom_point() + xlab("logpV4")
+
+
+
+cnts <- table(match1$count)
+cnt_dt <- data.table(times = as.numeric(names(cnts)), cnt = as.numeric(cnts))
+head(cnt_dt)
+cnt_dt <- cnt_dt[order(-times)]
+head(cnt_dt)
+cnt_dt[,tot := times * cnt]
+cnt_dt[,cum_cnt := cumsum(tot)]
+total <- sum(cnt_dt$tot)
+cnt_dt[min(which(cnt_dt$cum_cnt > total * .9))]
+
