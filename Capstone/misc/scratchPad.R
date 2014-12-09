@@ -59,6 +59,7 @@ dim(wrds_sm)
 inS <- paste(wrds_sm$V1, collapse=" ")
 system.time(y <- getPOS(inS))
 
+
 matchTable2 <- matchTable2[, logp1 :=  log(wrd_cnts[wrds[225],count] / tot_wrds)]
 
 matchTable2 <- matchTable2[,all_logp := log(wrd_cnts[wrds[V1], count]/tot_wrds) +
@@ -70,3 +71,42 @@ for (i in 1:dim(matchTable)[1]) {
     matchTable$match[i] <- matchTable$ans[i] %in% unlist(dt$pred[i])
     first_pred <- append(first_pred, unlist(dt$pred[i])[1])
 }
+
+
+## DISTRIBUTION of logp for all
+require(ggplot2)
+x <- seq(from = -20, to=-70, by=-1)
+log_grps <- table(cut(matchTable2$logpAll, x))
+df <- data.frame(log_grps)
+df$val <- sort(x)[1:50]
+ggplot(df, aes(x=val, y=Freq)) + geom_point() + xlab("logpAll")
+
+
+
+# DISTRIBUTION of logpV3 to logpAll
+matchTable2[, pV4_over_All := logpV4/logpAll]
+x <- seq(from=.05, to=.55, by=.01)
+v4Ratio <- table(cut(matchTable2$pV4_over_All, x))
+df2 <- data.frame(v4Ratio)
+df2$val <- x[1:50]
+ggplot(df2, aes(x=val, y=Freq)) + geom_point() + xlab("logpV4 / logpAll")
+
+x <- seq(from=-17.0, to=-4.5, by=.5)
+v4Dist <- table(cut(matchTable2$logpV4, x))
+df3 <- data.frame(v4Dist)
+df3$val <- x[1:25]
+ggplot(df3, aes(x=val, y=Freq)) + geom_point() + xlab("logpV4")
+
+
+
+cnts <- table(match1$count)
+cnt_dt <- data.table(times = as.numeric(names(cnts)), cnt = as.numeric(cnts))
+head(cnt_dt)
+cnt_dt <- cnt_dt[order(-times)]
+head(cnt_dt)
+cnt_dt[,tot := times * cnt]
+cnt_dt[,cum_cnt := cumsum(tot)]
+total <- sum(cnt_dt$tot)
+cnt_dt[min(which(cnt_dt$cum_cnt > total * .9))]
+
+
