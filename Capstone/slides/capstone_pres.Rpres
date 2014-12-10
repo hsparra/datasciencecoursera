@@ -3,26 +3,37 @@ Coursera Data Science Capstone Text Prediction Prototype
 author: Hunt Sparra
 date: 14 December 2014
 
-Algorithm Approach
+Introduction
+========================================================
+In collaboration with [SwiftKey](http://swiftkey.com), the goal of the coarse was to apply what has been learned in the rest of the courses to a new area, natural language processing. The end product is a Shiny appliation to predict the next word when given a phrase.
+
+The following slides cover:
+- How the data was prepared
+- How the final algorithm works
+- Instructions on using the Shiny app
+
+Data Preparation
+========================================================
+The data used was provided for the course and consisted of twitter tweets, blog postings, and news articles. The original data was from the HC Corpus (www.corpora.heliohost.org). The subset of English language files was used.
+
+Steps used to prepare data:
+- Sample cleaned of white spaces, punctuations, and numbers
+- Create n-grams, specifically 2-grams, 3-grams, and 4 grams
+- Compress n-grams by converting words to integers
+- Select subset of n-grams providing most coverage for available application memory
+
+Prediction Algorithm
 ========================================================
 
-For more details on authoring R presentations click the
-**Help** button on the toolbar.
+Given a phrose the following steps are performed:
 
-- Bullet 1
-- Bullet 2
-- Bullet 3
+1. Clean text (remove punctuation and numbers, split out words)
+2. Take last 3 words in phrose and match against 4-gram set
+3. If nothing found try last 2 words on 3-grams, then last word on 2-grams
+4. When match is found, stop processing and return next word identified in n-gram.
+    - ex: the 4th word in a matched 4-gram
+5. When multiple matches occur, the match with the highest probability is chosen
 
-Application Instructions
+Shiny and Future Enhancements
 ========================================================
-
-```{r}
-summary(cars)
-```
-
-Slide With Plot
-========================================================
-
-```{r, echo=FALSE}
-plot(cars)
-```
+This Shiny app, found at http://hsparra.shnyapps.io/capston_shinyapp, is a very simple apple that consists of a field to enter some text.
