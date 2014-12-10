@@ -60,19 +60,14 @@ inS <- paste(wrds_sm$V1, collapse=" ")
 system.time(y <- getPOS(inS))
 
 
-matchTable2 <- matchTable2[, logp1 :=  log(wrd_cnts[wrds[225],count] / tot_wrds)]
-
-matchTable2 <- matchTable2[,all_logp := log(wrd_cnts[wrds[V1], count]/tot_wrds) +
-    log(wrd_cnts[wrds[V2], count]/tot_wrds) +
-    log(wrd_cnts[wrds[V3], count]/tot_wrds) +
-    log(wrd_cnts[wrds[V4], count]/tot_wrds)
-]
-for (i in 1:dim(matchTable)[1]) {
-    matchTable$match[i] <- matchTable$ans[i] %in% unlist(dt$pred[i])
-    first_pred <- append(first_pred, unlist(dt$pred[i])[1])
-}
-
-
+## Add logp for vars
+load("data/tables/_rweka/word_counts.RData")
+tot_wrds <- sum(wrd_cnts$count)
+match4_sm[, logpV4 := log(wrd_cnts[wrds[V4], count] / tot_wrds)]
+match4_sm[, logpV3 := log(wrd_cnts[wrds[V3], count] / tot_wrds)]
+match4_sm[, logpV2 := log(wrd_cnts[wrds[V2], count] / tot_wrds)]
+match4_sm[, logpV1 := log(wrd_cnts[wrds[V1], count] / tot_wrds)]
+match4_sm[, logpAll := logpV4 + logpV3 + logpV2 + logpV1]
 ## DISTRIBUTION of logp for all
 require(ggplot2)
 x <- seq(from = -20, to=-70, by=-1)
