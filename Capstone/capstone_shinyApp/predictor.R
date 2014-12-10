@@ -114,24 +114,24 @@ qMatch <- function(inText, m4gram, m3gram, m2gram, wrds, maxToReturn = 1) {
     if (length(x) >= 3) {
         m <- match4Gram(x, m4gram)
         if (dim(m)[1] > 0) {
-            m <- m[order(-ratio)]
-            return( wrds[m$V4[1:maxToReturn]])
+            m <- m[order(stopWord, -ratio)]
+            return( wrds[m$V4[1:maxToReturn]] %>% na.omit)
         }
     }
     
     if (length(x) >= 2) {
         m <- match3Gram(x, m3gram)
         if (dim(m)[1] > 0) {
-            m <- m[order(-bi_cnt, -ratio)]
-            return( wrds[m$V3[1:maxToReturn]])
+            m <- m[order(stopWord, -bi_cnt, -ratio)]
+            return( na.omit(wrds[m$V3[1:maxToReturn]]))
         }
     }
     
     m <- match2Gram(x, m2gram)
     if (dim(m)[1] > 0) {
         m <- m[order(-ratio)]
-        return( wrds[m$V3[1:maxToReturn]])
+        return( na.omit(wrds[m$V3[1:maxToReturn]]))
     }
-    return("oops")
+    return("")
 }
 
