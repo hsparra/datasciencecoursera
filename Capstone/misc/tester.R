@@ -8,25 +8,40 @@ load("data/tables/_rweka/decode.RData")
 
 test <- fread("data/split/blogs_9.txt", sep="\n", header=FALSE, nrows=500)
 
-test2 <- test[1:20]
+test2 <- test[1:100]
 
-temp <- sapply(test2, strsplit, split= " ")
-tst_ans <-  sapply(temp, last)
-tst_ans <- gsub("[[:punct:]]", "", tst_ans)
+batchTestWithSummary(test2, 3)
 
-tst_input <- sapply(temp, allButLast)
-
-system.time(predictions <- sapply(tst_input, qMatch, match4_sm, match3_sm, match2, wrds, maxToReturn=1))
-
-names(predictions) <- NULL
-dt <- data.table(pred=predictions, ans=tst_ans)
-correct_exact <- sum(predictions == tst_ans, na.rm=TRUE)
-cat("4-gram prediction results:", "\n",
-    "  single correct:", correct_exact, "\n",
-    "  percent singe: ", correct_exact/length(predictions), "\n")
+testAndShowResults(start=10,end=15)
 
 
-testAndShowResults(1,10)
+batchTestWithSummary <- function(test2, maxToReturn = 3) {
+    temp <- sapply(test2, strsplit, split= " ")
+    tst_ans <-  sapply(temp, last)
+    tst_ans <- gsub("[[:punct:]]", "", tst_ans)
+    
+    tst_input <- sapply(temp, allButLast)
+    
+    system.time(predictions <- sapply(tst_input, qMatch, match4_sm, match3_sm, match2, wrds, maxToReturn))
+    
+    names(predictions) <- NULL
+    dt <- data.table(pred=predictions, ans=tst_ans)
+    first_pred <- character(0)
+    for (i in 1:dim(dt)[1]) {
+        dt$match[i] <- dt$ans[i] %in% unlist(dt$pred[i])
+        first_pred <- append(first_pred, unlist(dt$pred[i])[1])
+    }
+    
+    correct_exact <- sum(first_pred == tst_ans, na.rm=TRUE)
+    # correct_exact <- sum(predictions == tst_ans, na.rm=TRUE)
+    correct <- sum(dt$match)
+    cat("4-gram prediction results:", "\n",
+        "  single correct:", correct_exact, "\n",
+        "  percent singe: ", correct_exact/length(predictions), "\n",
+        "  correct in 3:", correct, "\n",
+        "  percent in 3:", correct/length(predictions), "\n")
+}
+
 
 testAndShowResults <- function(start=1, end=10, nToShow=3) {
     n <- end - start + 1
@@ -97,8 +112,8 @@ allButLast <- function(x) {
 }
 
 
-qMatch <- function(inText) {
-    x <- cleanText(inText, noStemLast = FALSE)
+broadMatch <- function(inText, matchTable) {
+    x <- cleanTextForMatch(inText)
     z <- matchTable[V3 == match(x, wrds)]
     z1 <- z[V2 == match(x, wrds)]
     if (dim(z1)[1] > 0) {
@@ -108,8 +123,8 @@ qMatch <- function(inText) {
     if (dim(z1)[1] > 0) {
         z <- z1
     }
-    z <- z[order(-logV4, -logAll, -count)]
-    pred <- wrds[z$V4[1]] %>% na.omit
-    pred
+    z <- z[order(-logpV4, -logpAll, -count)]
+#     pred <- wrds[z$V4[1]] %>% na.omit
+#     pred
 }
 

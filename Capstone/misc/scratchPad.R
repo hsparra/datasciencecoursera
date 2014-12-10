@@ -66,7 +66,7 @@ tot_wrds <- sum(wrd_cnts$count)
 match4_sm[, logpV4 := log(wrd_cnts[wrds[V4], count] / tot_wrds)]
 match4_sm[, logpV3 := log(wrd_cnts[wrds[V3], count] / tot_wrds)]
 match4_sm[, logpV2 := log(wrd_cnts[wrds[V2], count] / tot_wrds)]
-match4_sm[, logpV1 := log(wrd_cnts[wrds[V1], count] / tot_wrds)]
+match4_sm[, logpV1 := log(wrd_cnts[wrds[match4_sm$V1], count] / tot_wrds)]
 match4_sm[, logpAll := logpV4 + logpV3 + logpV2 + logpV1]
 ## DISTRIBUTION of logp for all
 require(ggplot2)
@@ -105,3 +105,18 @@ total <- sum(cnt_dt$tot)
 cnt_dt[min(which(cnt_dt$cum_cnt > total * .9))]
 
 
+pred           ans
+1 here, over, getting          mine
+2 car, job, challenge           job
+3      of, like, more nervewrecking
+4  days, weeks, years       stories
+5                            novels
+6                  be          read
+
+input
+1 It still feels weird to know that the business degree I’ve been working for four years is finally
+2                                                    So now I’m in the process of looking for a new
+3             Secondly, I finally began moving in with my boyfriend of four years, and that’s a bit
+4      As for reading books, the last week of April gave me an opportunity to relax and enjoy a few
+5            As you will see, I have not finished much, but I have successfully began several hefty
+6             I am happy with the progress I’ve made so far and the quality of books I’ve picked to
