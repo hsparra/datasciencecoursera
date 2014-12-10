@@ -5,7 +5,7 @@ date: 14 December 2014
 
 Introduction
 ========================================================
-In collaboration with [SwiftKey](http://swiftkey.com), the goal of the coarse was to apply what has been learned in the rest of the courses to a new area, natural language processing. The end product is a Shiny appliation to predict the next word when given a phrase.
+In collaboration with [SwiftKey](http://swiftkey.com), the goal of the course was to apply what has been learned in the rest of the courses to a new area, natural language processing. The end product is a Shiny application to predict the next word when given a phrase.
 
 The following slides cover:
 - How the data was prepared
@@ -19,16 +19,17 @@ The data used was provided for the course and consisted of twitter tweets, blog 
 Steps used to prepare data:
 - Sample cleaned of white spaces, punctuations, and numbers
 - Create n-grams, specifically 2-grams, 3-grams, and 4 grams
+    - ex 2-grams: "I am", "am going", "going to", "to the", "the movies"
 - Compress n-grams by converting words to integers
 - Select subset of n-grams providing most coverage for available application memory
 
 Prediction Algorithm
 ========================================================
 
-Given a phrose the following steps are performed:
+Given a phrase the following steps are performed:
 
-1. Clean text (remove punctuation and numbers, split out words)
-2. Take last 3 words in phrose and match against 4-gram set
+1. Remove punctuation and numbers from phrase
+2. Take last 3 words in phrase and match against 4-gram set
 3. If nothing found try last 2 words on 3-grams, then last word on 2-grams
 4. When match is found, stop processing and return next word identified in n-gram.
     - ex: the 4th word in a matched 4-gram
@@ -36,4 +37,4 @@ Given a phrose the following steps are performed:
 
 Shiny and Future Enhancements
 ========================================================
-This Shiny app, found at http://hsparra.shnyapps.io/capston_shinyapp, is a very simple apple that consists of a field to enter some text.
+This Shiny app, found at https://hsparra.shinyapps.io/capstone_shinyApp/, is a very simple apple that consists of a field to enter some text. Begin entering words and the prediction will show up below in green. As you type the prediction will update. When there are also other possible words identified they will be listed below the predicted word.
