@@ -5,36 +5,40 @@ date: 14 December 2014
 
 Introduction
 ========================================================
-In collaboration with [SwiftKey](http://swiftkey.com), the goal of the course was to apply what has been learned in the rest of the courses to a new area, natural language processing. The end product is a Shiny application to predict the next word when given a phrase.
+**Motivation**
+- Typing has replaced writing
+- People want to go faster
+- Predicting next word by computer is faster
+- Applications beyond typing (translation, call systems, etc.)
 
-The following slides cover:
-- How the data was prepared
-- How the final algorithm works
-- Instructions on using the Shiny app
+**Goal**  
+- Create a prediction algorithm to predict next word given a phrase
 
 Data Preparation
 ========================================================
-The data used was provided for the course and consisted of twitter tweets, blog postings, and news articles. The original data was from the HC Corpus (www.corpora.heliohost.org). The subset of English language files was used.
+Training consisted of english tweets, blog postings, and news articlesfrom the HC Corpus (www.corpora.heliohost.org)
 
-Steps used to prepare data:
-- Sample cleaned of white spaces, punctuations, and numbers
-- Create n-grams, specifically 2-grams, 3-grams, and 4 grams
-    - ex 2-grams: "I am", "am going", "going to", "to the", "the movies"
+**Prepare Data for Applicatino**
+- Remove white spaces, punctuations, and numbers
+- Create 2-grams, 3-grams, and 4-grams
+- Add frequencies to n-grams
 - Compress n-grams by converting words to integers
 - Select subset of n-grams providing most coverage for available application memory
 
 Prediction Algorithm
 ========================================================
+**Use Input to Find Best Match**  
 
-Given a phrase the following steps are performed:
-
-1. Remove punctuation and numbers from phrase
+1. Remove white spaces, punctuations, and numbers
 2. Take last 3 words in phrase and match against 4-gram set
 3. If nothing found try last 2 words on 3-grams, then last word on 2-grams
 4. When match is found, stop processing and return next word identified in n-gram.
     - ex: the 4th word in a matched 4-gram
-5. When multiple matches occur, the match with the highest probability is chosen
+
+**Breaking Ties**
+* Match with the highest probability is chosen
 
 Shiny and Future Enhancements
 ========================================================
-This Shiny app, found at https://hsparra.shinyapps.io/capstone_shinyApp/, is a very simple apple that consists of a field to enter some text. Begin entering words and the prediction will show up below in green. As you type the prediction will update. When there are also other possible words identified they will be listed below the predicted word.
+This Shiny app, found at https://hsparra.shinyapps.io/capstone_shinyApp/, is a very simple apple that consists of a field to enter some text. Begin entering words and the prediction will show up below in green. As you type the prediction will update. When there are also other possible words identified they will be listed below the predicted word.ß
+
