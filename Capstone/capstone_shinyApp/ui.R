@@ -25,8 +25,7 @@ shinyUI(fluidPage(
 
             hr(),
             em(textOutput("oText")),
-            htmlOutput("otherGuesses")
-            
+            htmlOutput("otherGuesses")            
         )
     
     ))

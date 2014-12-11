@@ -1,9 +1,9 @@
 library(shiny)
 source("predictor.R")
 
-load("data/match4gram.RData")
-load("data/match3grams.RData")
-load("data/match2gram.RData")
+load("data/match4.RData")
+load("data/match3.RData")
+load("data/match2.RData")
 load("data/decode.RData")
 
 shinyServer(function(input, output) {
@@ -11,7 +11,7 @@ shinyServer(function(input, output) {
         inPhrase <- input$phrase
         
         if (nchar(input$phrase) > 2 ) {
-            pred <- qMatch(isolate(input$phrase), match4_sm, match3_sm, match2, wrds, 4)
+            pred <- qMatch(isolate(input$phrase), match4, match3, match2, wrds, 4)
             if (length(pred) == 0) {
                 pred <- ""
                 otherPreds <- ""
