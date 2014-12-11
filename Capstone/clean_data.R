@@ -78,8 +78,8 @@ splitFile("en_US/en_US.twitter.txt", "data/split/", "twitter", 10)
 splitFile("en_US/en_US.blogs.txt", "data/split/", "blogs", 10)
 splitFile("en_US/en_US.news.txt", "data/split/", "news", 10)
 
-files <- list.files("data/split/pre_final/", pattern="blogs_", full.names=TRUE)
-sapply(files, splitIntoSentences, "data/split/", "blogs")
+files <- list.files("data/split/pre_final/", pattern="news_", full.names=TRUE)
+sapply(files, splitIntoSentences, "data/split/", "news")
 
 
 
@@ -198,7 +198,7 @@ createTableOfFrequencies <- function(x, count_name = "bi_cnt", by_cols = c("V1",
 
 combineCountTables <- function (t1, t2=data.table(), ngram=4) {
     if (dim(t2)[1] == 0) { return(t1)}
-    m_cols <- names(t1) %>% function(x) x[1:(length(x) - ngram + 1)]
+    m_cols <- names(t1) %>% function(x) x[1:ngram]
     t <- merge(t1, t2, by=m_cols, all = TRUE)
     t[is.na(t)] <- 0
     t_l <- t[, count := count.x + count.y]
@@ -263,12 +263,12 @@ createNGrams <- function (inFile, outFile, nGramType=2, step=100, progressCount=
         i <- i + step + 1
         msg_cnt <- msg_cnt + step
         if (msg_cnt >= progressCount) {
-            cat(j, "  lines have been processed", "\n")
+            cat(j, "  lines have been processed", date(),"\n")
             msg_cnt <- 1
         }
     }
     close(conOut)
-    cat("All", j, "lines have been processed", "\n")
+    cat("All", j, "lines have been processed", date(),"\n")
 }
 
 createNGramsFromVector <- function(v, nGramType=2, progressCount=10000) {
@@ -357,7 +357,7 @@ addToDecode <- function(dt, out=character(0)) {
 
 
 ### CLEAN FILES
-files <- list.files("data/split/", pattern="(blogs|twitter).*_[12345678].txt", full.names = TRUE)
+files <- list.files("data/split/", pattern="(news|twitter).*_[12345678].txt", full.names = TRUE)
 sapply(files, cleanFile)
 
 # for multicore
@@ -373,7 +373,7 @@ for (f in files) {
 
 ### CREATE NGRAMS
 inF <- c("data/cleaned/blogs_1_clean.txt")
-inF <- list.files("data/cleaned/", pattern="(blogs|twitter)_", full.names = TRUE)
+inF <- list.files("data/cleaned/", pattern="(news|twitter)_", full.names = TRUE)
 sapply(inF, createNGramsFromVector, nGramType=2)
 sapply(inF, createNGramsFromVector, nGramType=3)
 sapply(inF, createNGramsFromVector, nGramType=4)
@@ -386,7 +386,7 @@ mclapply(inF, createNGramsFromEndGivenFiles, ngram=4, mc.cores=getOption("mc.cor
 
 
 ### CREATE WORD COUNTS
-files <- list.files("data/cleaned/", pattern="(blogs|twitter).*.txt", full.names = TRUE)
+files <- list.files("data/cleaned/", pattern="(news|twitter).*.txt", full.names = TRUE)
 wrd_cnts <- data.table()
 # wrd_cnts <- lapply(files, read.And.Get.Counts, wrd_cnts)  # Returns list with data tables
 for (f in files) {
@@ -424,8 +424,9 @@ gc()
 
 
 # CREATE COUNT TABLES AND COMPRESS
-files <- list.files("data/ngrams/_rweka/2grams/", pattern="(blogs|twitter)", full.names = TRUE)
-files <- list.files("data/ngrams/_rweka/4grams/", pattern="(blogs|twitter)", full.names = TRUE)
+files <- list.files("data/ngrams/_rweka/2grams/", pattern="(news|twitter)", full.names = TRUE)
+files <- list.files("data/ngrams/_rweka/3grams/", pattern="(news|twitter)", full.names = TRUE)
+files <- list.files("data/ngrams/_rweka/4grams/", pattern="(news|twitter)", full.names = TRUE)
 
 for (f in files) {
     cat("Processing file:", f, "   ", date(),"\n")
@@ -443,13 +444,14 @@ for (f in files) {
 
 
 # CREATE COMBINED TABLE FOR MATCHING
-files <- list.files("data/tables/_rweka/4grams/", pattern="(blog|twitter).*RData", full.names=TRUE)
+files <- list.files("data/tables/_rweka/4grams/", pattern="(news|twitter).*RData", full.names=TRUE)
 
 outDt <- data.table()
 for (f in files) {
     cat("Processing file:", f, "  ", date(), "\n")
     load(f)
     dt <- l[[1]]
+#     dt <- dt[count > 1]
     outDt <- combineCountTables(dt, outDt, ngram=4)
 }
 
@@ -467,6 +469,12 @@ save(matchTable, file="data/tables/4grams/match4gramsLogs.RData")
 ## TO DO ##
 
 
+### ADD STOP WORD INDICATOR
+
+stopWrds <- match(stopwords(), wrds)
+match2[, stopWord := V2 %in% stopWrds]
+match3[, stopWord := V3 %in% stopWrds]
+match4[, stopWord := V4 %in% stopWrds]
 
 gc()
 

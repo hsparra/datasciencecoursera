@@ -94,7 +94,7 @@ ggplot(df3, aes(x=val, y=Freq)) + geom_point() + xlab("logpV4")
 
 
 
-cnts <- table(match1$count)
+cnts <- table(match2$count)
 cnt_dt <- data.table(times = as.numeric(names(cnts)), cnt = as.numeric(cnts))
 head(cnt_dt)
 cnt_dt <- cnt_dt[order(-times)]
@@ -102,7 +102,16 @@ head(cnt_dt)
 cnt_dt[,tot := times * cnt]
 cnt_dt[,cum_cnt := cumsum(tot)]
 total <- sum(cnt_dt$tot)
-cnt_dt[min(which(cnt_dt$cum_cnt > total * .9))]
+cnt_dt[min(which(cnt_dt$cum_cnt > total * .8))]
+
+
+
+## ADD STOP WORDS
+stopWrds <- match(stopwords(), wrds)
+match2[, stopWord := V2 %in% stopWrds]
+match3[, stopWord := V3 %in% stopWrds]
+match4[, stopWord := V4 %in% stopWrds]
+
 
 
 pred           ans
