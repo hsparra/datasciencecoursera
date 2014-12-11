@@ -130,7 +130,7 @@ qMatch <- function(inText, m4gram, m3gram, m2gram, wrds, maxToReturn = 1) {
     m <- match2Gram(x, m2gram)
     if (dim(m)[1] > 0) {
         m <- m[order(-count)]
-        return( na.omit(wrds[m$V3[1:maxToReturn]]))
+        return( na.omit(wrds[m$V2[1:maxToReturn]]))
     }
     return("")
 }
