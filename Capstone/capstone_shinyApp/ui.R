@@ -3,14 +3,7 @@ library(shiny)
 shinyUI(fluidPage(
     
     titlePanel("Coursera Data Science Capstone"),
-    
 
-#     sidebarLayout(
-#         sidebarPanel(
-#         helpText("Enter a phase except for the last word and
-#                  see what the app guesses.")
-#         ),
-    
     mainPanel(
             h3("Word Prediciton"),
             hr(),
@@ -27,5 +20,30 @@ shinyUI(fluidPage(
             em(textOutput("oText")),
             htmlOutput("otherGuesses")            
         )
+
+#     fluidRow(
+#         column(12,
+#                h3("Word Prediciton"),
+#                hr()
+#                )
+#         ),
+#     
+#     fluidRow(
+#         column(6,
+#                helpText("Begin typing to see prediction of next word:"),
+#                textInput("phrase", "",""),
+#                tags$head(tags$style(type="text/css", "#phrase {width: 450px}"))
+#             ),
+#         column(6,
+#                p(em("Predicted next word:")),
+#                span(h3(textOutput("guess")), style="color:green"),
+#                
+#                hr(),
+#                em(textOutput("oText")),
+#                htmlOutput("otherGuesses")  
+#                )
+#         )
     
-    ))
+    
+    )
+)
