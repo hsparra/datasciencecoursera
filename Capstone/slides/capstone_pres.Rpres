@@ -38,7 +38,9 @@ Prediction Algorithm
 **Breaking Ties**
 * Match with the highest probability is chosen
 
-Shiny and Future Enhancements
+Word Prediction Shiny App
 ========================================================
-This Shiny app, found at https://hsparra.shinyapps.io/capstone_shinyApp/, is a very simple apple that consists of a field to enter some text. Begin entering words and the prediction will show up below in green. As you type the prediction will update. When there are also other possible words identified they will be listed below the predicted word.ß
+The Shiny app can be found at https://hsparra.shinyapps.io/capstone_shinyApp/.
+
+Simply type your text into the text box. As you type the prediction will show up below in green with other alternatives below that in black. As you continue typing the prediction will upate. When there are also other possible words identified they will be listed below the predicted word.ß
 
