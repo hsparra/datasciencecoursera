@@ -20,9 +20,9 @@ test <- fread("data/split/news_9.txt", sep="\n", header=FALSE, skip = 25000, nro
 
 test2 <- test[1:300]
 
-batchTestWithSummary(test2, 3, qMatch)   # ties by stopwords, ratio, logp
-batchTestWithSummary(test2, 3, qMatch2)  # ties by ratio
-batchTestWithSummary(test2, 3, qMatch3)  # ties by logp, ratio
+batchTestWithSummary(test2, 3, qMatch)   # ties by stopwords, -ratio, logp
+batchTestWithSummary(test2, 3, qMatch2)  # ties by -ratio
+batchTestWithSummary(test2, 3, qMatch3)  # ties by logp, -ratio
 
 testAndShowResults(start=10,end=15)
 
