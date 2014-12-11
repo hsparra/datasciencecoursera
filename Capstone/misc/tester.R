@@ -1,28 +1,40 @@
 source("misc/predictor_old.R")
-source("shinyApp/predictor.R")
+source("capstone_shinyApp/predictor.R")
 
-load("data/tables/_rweka/match4gram_gte7.RData")
-load("data/tables/_rweka/match3grams_gt6.RData")
-load("data/tables/_rweka/match2gram_gt5_80prct.RData")
-load("data/tables/_rweka/decode.RData")
+# load("data/tables/_rweka/match4gram_gte7.RData")
+# load("data/tables/_rweka/match3grams_gt6.RData")
+# load("data/tables/_rweka/match2gram_gt5_80prct.RData")
+# load("data/tables/_rweka/decode.RData")
+load("capstone_shinyApp/data/match2.RData")
+load("capstone_shinyApp/data/match3.RData")
+load("capstone_shinyApp/data/match4.RData")
+load("capstone_shinyApp/data/decode.RData")
 
-test <- fread("data/split/blogs_9.txt", sep="\n", header=FALSE, nrows=500)
+load("data/tables/_rweka/word_counts.RData")
+tot_wrds <- sum(wrd_cnts$count)
+match2[,logp := log(wrd_cnts[wrds[V2], count]/tot_wrds)]
+match3[,logp := log(wrd_cnts[wrds[V3], count]/tot_wrds)]
+match4[,logp := log(wrd_cnts[wrds[V4], count]/tot_wrds)]
 
-test2 <- test[1:100]
+test <- fread("data/split/news_9.txt", sep="\n", header=FALSE, skip = 25000, nrows=500)
 
-batchTestWithSummary(test2, 3)
+test2 <- test[1:300]
+
+batchTestWithSummary(test2, 3, qMatch)   # ties by stopwords, ratio, logp
+batchTestWithSummary(test2, 3, qMatch2)  # ties by ratio
+batchTestWithSummary(test2, 3, qMatch3)  # ties by logp, ratio
 
 testAndShowResults(start=10,end=15)
 
 
-batchTestWithSummary <- function(test2, maxToReturn = 3) {
+batchTestWithSummary <- function(test2, maxToReturn = 3, FUN) {
     temp <- sapply(test2, strsplit, split= " ")
     tst_ans <-  sapply(temp, last)
     tst_ans <- gsub("[[:punct:]]", "", tst_ans)
     
     tst_input <- sapply(temp, allButLast)
     
-    system.time(predictions <- sapply(tst_input, qMatch, match4_sm, match3_sm, match2, wrds, maxToReturn))
+    system.time(predictions <- sapply(tst_input, FUN, match4, match3, match2, wrds, maxToReturn))
     
     names(predictions) <- NULL
     dt <- data.table(pred=predictions, ans=tst_ans)
