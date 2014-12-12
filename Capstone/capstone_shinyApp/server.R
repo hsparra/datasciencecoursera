@@ -27,6 +27,9 @@ shinyServer(function(input, output) {
                 } else {
                     otherPreds <- ""
                 }
+                output$resultChoices <- renderUI({
+                 radioButtons("choices", "Suggestions", pred[1:length(pred)])  
+                })
             }
             output$otherGuesses <- renderText(paste("<h5>",otherPreds, collapse="<br>"))
             output$oText <- renderText(otherTextLabel)
