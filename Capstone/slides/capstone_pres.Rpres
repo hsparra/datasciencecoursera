@@ -9,7 +9,7 @@ Introduction
 - Typing has replaced writing
 - People want to go faster
 - Predicting next word by computer is faster
-- Applications beyond typing (translation, call systems, etc.)
+- Can be extended to applications beyond typing (translation, call systems, etc.)
 
 **Goal**  
 - Create a prediction algorithm to predict next word given a phrase
