@@ -16,9 +16,9 @@ Introduction
 
 Data Preparation
 ========================================================
-Training consisted of english tweets, blog postings, and news articlesfrom the HC Corpus (www.corpora.heliohost.org)
+Training data consisted of english tweets, blog postings, and news articles from the HC Corpus (www.corpora.heliohost.org)
 
-**Prepare Data for Applicatino**
+**Prepare Data for Application**
 - Remove white spaces, punctuations, and numbers
 - Create 2-grams, 3-grams, and 4-grams
 - Add frequencies to n-grams
@@ -36,11 +36,14 @@ Prediction Algorithm
     - ex: the 4th word in a matched 4-gram
 
 **Breaking Ties**
-* Match with the highest probability is chosen
+- Favor non-stop words over stop words (very common words such "am" and "a")
+- Match with the highest probability is chosen
 
 Word Prediction Shiny App
 ========================================================
 The Shiny app can be found at https://hsparra.shinyapps.io/capstone_shinyApp/.
 
-Simply type your text into the text box. As you type the prediction will show up below in green with other alternatives below that in black. As you continue typing the prediction will upate. When there are also other possible words identified they will be listed below the predicted word.ß
+**Instructions**
+
+Simply type your text into the text box. As you type the prediction will show up below in green with other alternatives below that in black. As you continue typing the prediction will upate. When there are also other possible words identified they will be listed below the predicted word.
 
