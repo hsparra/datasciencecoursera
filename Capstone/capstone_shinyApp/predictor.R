@@ -3,6 +3,8 @@ require(tm)
 require(tau)
 require(magrittr)
 
+singleLettersResultsToRemove <- setdiff(letters, c("a", "i"))
+
 cleanTextForMatch2<- function(data) {
     data <- unlist(strsplit(data, split=" "))
     data <- tolower(data)
@@ -104,6 +106,16 @@ match4Gram <- function(x, m4gram) {
     m <- m[V1 == x[(n-2)]]
 }
 
+cleanResults <- function(x) {
+    y <- setdiff(x, singleLettersResultsToRemove)
+    # If only single letters returned then go ahead and return them
+    if (length(y) == 0) {
+        y <- x
+    }
+    y <- ifelse(y == "i", "I", y)
+    na.omit(y)
+}
+
 qMatch <- function(inText, m4gram, m3gram, m2gram, wrds, maxToReturn = 1) {
     x <- cleanTextForMatch(inText)
     x <- match(x, wrds)
@@ -115,7 +127,8 @@ qMatch <- function(inText, m4gram, m3gram, m2gram, wrds, maxToReturn = 1) {
         m <- match4Gram(x, m4gram)
         if (dim(m)[1] > 0) {
             m <- m[order(stopWord, -ratio)]
-            return( wrds[m$V4[1:maxToReturn]] %>% na.omit)
+#             m <- m[order(-ratio)]
+            return( wrds[m$V4[1:maxToReturn]] %>% cleanResults)
         }
     }
     
@@ -123,14 +136,15 @@ qMatch <- function(inText, m4gram, m3gram, m2gram, wrds, maxToReturn = 1) {
         m <- match3Gram(x, m3gram)
         if (dim(m)[1] > 0) {
             m <- m[order(stopWord, -bi_cnt, -ratio)]
-            return( na.omit(wrds[m$V3[1:maxToReturn]]))
+#             m <- m[order(-bi_cnt, -ratio)]
+            return( wrds[m$V3[1:maxToReturn]] %>% cleanResults)
         }
     }
     
     m <- match2Gram(x, m2gram)
     if (dim(m)[1] > 0) {
         m <- m[order(-count)]
-        return( na.omit(wrds[m$V2[1:maxToReturn]]))
+        return( wrds[m$V2[1:maxToReturn]] %>% cleanResults)
     }
     return("")
 }
