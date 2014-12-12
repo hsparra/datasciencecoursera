@@ -18,9 +18,11 @@ shinyServer(function(input, output) {
             }
             output$guess <- renderText(pred[1])
             otherTextLabel <- ""
+            outGuess <- ""
             if (length(pred) >= 1) {
+                outGuess <- paste(input$phrase, pred[1], sep=" ")
                 if (length(pred) > 1) {
-                    otherTextLabel <- "Other possibilities:"
+                    otherTextLabel <- "Other predicted words:"
                     otherPreds <- pred[2:length(pred)]
                 } else {
                     otherPreds <- ""
@@ -28,6 +30,7 @@ shinyServer(function(input, output) {
             }
             output$otherGuesses <- renderText(paste("<h5>",otherPreds, collapse="<br>"))
             output$oText <- renderText(otherTextLabel)
+            output$outPhrase <- renderText(outGuess)
         }
     })
 
