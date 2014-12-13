@@ -6,35 +6,42 @@ load("data/match3.RData")
 load("data/match2.RData")
 load("data/decode.RData")
 
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
     observe({
         inPhrase <- input$phrase
-        
-        if (nchar(input$phrase) > 2 ) {
-            pred <- qMatch(isolate(input$phrase), match4, match3, match2, wrds, 4)
+        if (is.null(inPhrase)) {
+            inPhrase <- ""
+        }
+        output$guess <- renderText("<em>Predicted next word: </em>")
+        if (nchar(inPhrase) > 2 ) {
+            pred <- qMatch(isolate(inPhrase), match4, match3, match2, wrds, input$numReturn)
             if (length(pred) == 0) {
                 pred <- ""
-                otherPreds <- ""
             }
-            output$guess <- renderText(pred[1])
-            otherTextLabel <- ""
             outGuess <- ""
             if (length(pred) >= 1) {
-                outGuess <- paste(input$phrase, pred[1], sep=" ")
-                if (length(pred) > 1) {
-                    otherTextLabel <- "Other predicted words:"
-                    otherPreds <- pred[2:length(pred)]
-                } else {
-                    otherPreds <- ""
-                }
                 output$resultChoices <- renderUI({
-                 radioButtons("choices", "Suggestions", pred[1:length(pred)])  
+                 radioButtons("choices", "Suggestions", pred[1:length(pred)])
                 })
             }
-            output$otherGuesses <- renderText(paste("<h5>",otherPreds, collapse="<br>"))
-            output$oText <- renderText(otherTextLabel)
-            output$outPhrase <- renderText(outGuess)
+            
+            output$suggestionText <- renderText ({
+                theChoice <- isolate(input$choices)
+                theChoice <- input$choices
+                paste(inPhrase, theChoice, sep=" ")
+                
+            })
+
         }
+    })
+
+    observe({
+        actn <- input$action
+        if (is.null(actn)) return()
+        if (actn == 0) return()
+        theChoice <- isolate(input$choices)
+        inPhrase <- isolate(input$phrase)
+        isolate(updateTextInput(session, "phrase", value=paste(inPhrase, theChoice, sep=" ")))            
     })
 
 })
