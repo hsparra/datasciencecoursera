@@ -6,23 +6,33 @@ shinyUI( fluidPage(
     sidebarLayout(
     
         sidebarPanel(
-        h4("Begin typing"),
+        h3("Settings"),
         hr(),
         
-        helpText("Begin typing to see prediction of next word:"),
-        tags$textarea(id="phrase", rows=5, cols=40, ""),
+        helpText("Use slider to adjust the maximum number of predicted words returned."),
         sliderInput("numReturn", "Maximum Number of Suggested Words", min=1, max=4, value=1),
-
-        uiOutput("resultChoices"),
-        actionButton("action", "Select Suggestion"),
         width=4
         ),
 
     mainPanel(
-        p(em("Your selected phrase:")),
+        
+        helpText("Begin typing to see prediction of next word:"),
+        textInput("phrase","",""),
+        tags$style(type="text/css", "#phrase {width: 500px"),
+        br(),
+        actionButton("action", "Add selection to input"),
+        uiOutput("resultChoices"),
+        
+        
+        br(),
+        br(),
+        br(),
+        p(em("Phrase with selection added:")),
         wellPanel(
             textOutput("suggestionText")
-            )
+            ),
+        width=8
         )
     )
+
 ))
