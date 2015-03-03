@@ -1,4 +1,4 @@
-d <- read.csv("electric_cars_addl.csv",header=T,stringsAsFactor=F)
+    d <- read.csv("electric_cars_addl.csv",header=T,stringsAsFactor=F)
 d <- subset(d, year > 2009, select = -c(orig.row, id, trans, cyl, displ, fuel))
 d$class <- factor(d$class, levels = c("Two Seaters", "Minicompact","Subcompact","Compact","Midsize","Large","Small SUV","SUV"))
 d$year <- factor(d$year)
