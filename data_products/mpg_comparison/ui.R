@@ -32,7 +32,7 @@ shinyUI(fluidPage(
                "fuel cost. You can get electricity costs from",
                "your power bill (defaulted to US average)."),
       sliderInput("gas_price","Price of 1 Gallon on Gas",
-                  min=2.5, max=5.0, value=3.5, step=.05),
+                  min=1.5, max=5.0, value=3.5, step=.05),
       sliderInput("el_price", "Price of 1 kwh of Electricity", 
                         min=0.02, max=0.4, value=.12, step=.01)      
     ),
